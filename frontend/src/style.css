@@ -1,0 +1,505 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 定義 CSS 變量 - 淺色模式 */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f7fa;
+  --bg-sidebar: #545c64;
+  --bg-sidebar-header: #434a50;
+
+  --text-primary: #303133;
+  --text-secondary: #606266;
+  --text-tertiary: #909399;
+  --text-inverse: #ffffff;
+
+  --border-color: #e4e7ed;
+  --border-light: #ebeef5;
+
+  --card-bg: #ffffff;
+  --hover-bg: #f5f7fa;
+
+  --primary-color: #409eff;
+  --success-color: #67c23a;
+  --warning-color: #e6a23c;
+  --danger-color: #f56c6c;
+
+  --logo-color: #ffd04b;
+  --menu-active-text: #ffd04b;
+}
+
+/* 深色模式變量 */
+html.dark {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #242424;
+  --bg-sidebar: #1f1f1f;
+  --bg-sidebar-header: #171717;
+
+  --text-primary: #e5e5e5;
+  --text-secondary: #d4d4d4;
+  --text-tertiary: #a3a3a3;
+  --text-inverse: #ffffff;
+
+  --border-color: #404040;
+  --border-light: #333333;
+
+  --card-bg: #262626;
+  --hover-bg: #2d2d2d;
+
+  --primary-color: #409eff;
+  --success-color: #67c23a;
+  --warning-color: #e6a23c;
+  --danger-color: #f56c6c;
+
+  --logo-color: #ffd04b;
+  --menu-active-text: #ffd04b;
+}
+
+/* 深色模式下的 Element Plus 組件樣式 */
+html.dark .el-card {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+html.dark .el-table {
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+}
+
+html.dark .el-table th,
+html.dark .el-table tr {
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+}
+
+html.dark .el-table--striped .el-table__body tr.el-table__row--striped td {
+  background-color: var(--bg-secondary);
+}
+
+html.dark .el-input__wrapper {
+  background-color: var(--bg-secondary);
+  box-shadow: 0 0 0 1px var(--border-color) inset;
+}
+
+html.dark .el-input__wrapper:hover {
+  box-shadow: 0 0 0 1px var(--border-light) inset;
+}
+
+html.dark .el-input__inner {
+  color: var(--text-primary);
+}
+
+html.dark .el-select-dropdown {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+html.dark .el-select-dropdown__item {
+  color: var(--text-primary);
+}
+
+html.dark .el-select-dropdown__item:hover {
+  background-color: var(--hover-bg);
+}
+
+html.dark .el-dialog {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+html.dark .el-dialog__header {
+  color: var(--text-primary);
+}
+
+html.dark .el-dialog__body {
+  color: var(--text-secondary);
+}
+
+html.dark .el-form-item__label {
+  color: var(--text-primary);
+}
+
+html.dark .el-menu-item:hover {
+  background-color: var(--hover-bg) !important;
+}
+
+html.dark .el-popover {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+html.dark .el-textarea__inner {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+html.dark .el-date-editor {
+  background-color: var(--bg-secondary);
+}
+
+html.dark .el-date-editor .el-input__inner {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+html.dark .el-picker-panel {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+html.dark .el-date-picker__header-label,
+html.dark .el-date-table th,
+html.dark .el-date-table td {
+  color: var(--text-primary);
+}
+
+html.dark .el-input-number {
+  background-color: var(--bg-secondary);
+}
+
+html.dark .el-input-number .el-input__inner {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+html.dark .el-color-picker__trigger {
+  border-color: var(--border-color);
+}
+
+html.dark .el-switch__core {
+  border-color: var(--border-color);
+  background-color: var(--bg-secondary);
+}
+
+html.dark .el-switch.is-checked .el-switch__core {
+  background-color: var(--primary-color);
+}
+
+html.dark .el-button--default {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+html.dark .el-button--default:hover {
+  background-color: var(--hover-bg);
+  border-color: var(--border-light);
+}
+
+html.dark .el-text {
+  color: var(--text-tertiary);
+}
+
+html.dark .el-input.is-disabled .el-input__wrapper {
+  background-color: #1a1a1a;
+  box-shadow: 0 0 0 1px var(--border-color) inset;
+}
+
+html.dark .el-input.is-disabled .el-input__inner {
+  color: var(--text-tertiary);
+}
+
+html.dark .el-empty__description {
+  color: var(--text-tertiary);
+}
+
+html.dark .el-message-box {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+html.dark .el-message-box__title,
+html.dark .el-message-box__message {
+  color: var(--text-primary);
+}
+
+html.dark .el-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+html.dark .el-color-dropdown {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+html.dark .el-popper {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+html.dark .el-date-table td.available:hover {
+  color: var(--primary-color);
+}
+
+html.dark .el-date-table td.today span {
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+html.dark .el-date-table td.current:not(.disabled) span {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+html.dark .el-picker__popper {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+html.dark .el-picker-panel__body {
+  color: var(--text-primary);
+}
+
+html.dark .el-picker-panel__footer {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+html.dark .el-input-number__decrease,
+html.dark .el-input-number__increase {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+html.dark .el-input-number__decrease:hover,
+html.dark .el-input-number__increase:hover {
+  color: var(--primary-color);
+}
+
+html.dark .el-select__popper {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+html.dark .el-select__wrapper {
+  background-color: var(--bg-secondary);
+  box-shadow: 0 0 0 1px var(--border-color) inset;
+}
+
+html.dark .el-select__wrapper:hover {
+  box-shadow: 0 0 0 1px var(--border-light) inset;
+}
+
+html.dark .el-select__selected-item {
+  color: var(--text-primary);
+}
+
+html.dark .el-select__placeholder {
+  color: var(--text-tertiary);
+}
+
+html.dark .el-tag {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+html.dark .el-menu {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+html.dark .el-menu-item {
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+}
+
+html.dark .el-menu-item.is-active {
+  background-color: var(--hover-bg);
+  color: var(--primary-color);
+}
+
+html.dark .el-menu-item:not(.is-disabled):hover {
+  background-color: var(--hover-bg);
+}
+
+body {
+  margin: 0;
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  /* GPU 加速優化 */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+#app {
+  width: 100%;
+  height: 100vh;
+  /* 啟用硬體加速 */
+  transform: translate3d(0, 0, 0);
+}
+
+/* FullCalendar 暗色模式樣式 */
+html.dark .fc-theme-standard th {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+html.dark .fc-col-header-cell {
+  background-color: var(--bg-secondary) !important;
+}
+
+html.dark .fc .fc-col-header-cell-cushion {
+  color: var(--text-primary) !important;
+}
+
+html.dark .fc .fc-toolbar-title {
+  color: var(--text-primary);
+}
+
+html.dark .fc .fc-daygrid-day-number {
+  color: var(--text-primary);
+}
+
+html.dark .fc-theme-standard td,
+html.dark .fc-theme-standard th {
+  border-color: var(--border-color) !important;
+}
+
+html.dark .fc-scrollgrid {
+  border-color: var(--border-color) !important;
+}
+
+/* 表格操作栏暗色模式优化 */
+html.dark .el-table__header-wrapper th {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+html.dark .el-table__fixed-header-wrapper th {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+html.dark .el-button--small {
+  border-color: transparent;
+}
+
+html.dark .el-button--primary.el-button--small {
+  background-color: #409eff;
+  border-color: #409eff;
+}
+
+html.dark .el-button--primary.el-button--small:hover {
+  background-color: #66b1ff;
+  border-color: #66b1ff;
+}
+
+html.dark .el-button--danger.el-button--small {
+  background-color: #f56c6c;
+  border-color: #f56c6c;
+}
+
+html.dark .el-button--danger.el-button--small:hover {
+  background-color: #f78989;
+  border-color: #f78989;
+}
+
+/* 表格行悬停效果 - 使用 GPU 加速 */
+html.dark .el-table__body tr > td {
+  transition: background-color 0.1s ease !important;
+  will-change: background-color;
+  transform: translateZ(0);
+}
+
+html.dark .el-table__body tr:hover > td.el-table__cell {
+  background-color: var(--hover-bg) !important;
+}
+
+html.dark .el-table__body tr:hover > td {
+  background-color: var(--hover-bg) !important;
+}
+
+html.dark .el-table__row:hover {
+  background-color: var(--hover-bg) !important;
+}
+
+html.dark .el-table--striped .el-table__body tr.el-table__row--striped:hover > td {
+  background-color: var(--hover-bg) !important;
+}
+
+html.dark .el-table--enable-row-hover .el-table__body tr:hover > td {
+  background-color: var(--hover-bg) !important;
+}
+
+html.dark .el-table--striped .el-table__body tr:hover {
+  background-color: var(--hover-bg) !important;
+}
+
+/* 浅色模式也加快过渡速度 */
+.el-table__body tr > td {
+  transition: background-color 0.1s ease !important;
+  will-change: background-color;
+  transform: translateZ(0);
+}
+
+/* 覆盖 Element Plus 默认的 hover 颜色 */
+html.dark .el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell {
+  background-color: var(--hover-bg) !important;
+}
+
+html.dark .el-table tbody tr:hover > td {
+  background-color: var(--hover-bg) !important;
+}
+
+html.dark .el-table tbody tr:hover {
+  background-color: var(--hover-bg) !important;
+}
+
+/* 全局性能優化 - 減少拖動殘影 */
+* {
+  /* 禁用不必要的 will-change，僅在需要時使用 */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 為滾動容器啟用硬體加速 */
+.el-scrollbar__wrap,
+.el-table__body-wrapper,
+.notification-list,
+.el-select-dropdown__wrap {
+  -webkit-overflow-scrolling: touch;
+  transform: translateZ(0);
+  will-change: scroll-position;
+}
+
+/* 為動畫元素優化渲染 */
+.el-dialog,
+.el-drawer,
+.el-message-box,
+.el-notification,
+.el-popover,
+.el-popper {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* 為卡片和容器添加硬體加速 */
+.el-card,
+.el-table,
+.layout-container,
+.main-content {
+  transform: translateZ(0);
+}
+
+/* 優化過渡動畫 */
+.sidebar,
+.header,
+.footer,
+.main-content {
+  will-change: background-color;
+  transform: translate3d(0, 0, 0);
+}

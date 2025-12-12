@@ -95,6 +95,8 @@ public class SecurityConfig {
                 // 公開端點：不需要認證
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/test/**").permitAll()
+                // Swagger UI 公開訪問
+                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/v3/api-docs/**").permitAll()
                 // 所有其他請求都需要認證
                 .anyRequest().authenticated()
             )

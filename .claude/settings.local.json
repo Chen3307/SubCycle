@@ -14,5 +14,18 @@
     ],
     "deny": [],
     "ask": []
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "請在本次對話中全程使用繁體中文（Traditional Chinese, zh-TW）回覆用戶。"
+          }
+        ]
+      }
+    ]
   }
 }

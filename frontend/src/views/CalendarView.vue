@@ -11,6 +11,8 @@
       v-model="dialogVisible"
       :title="selectedEvent?.title"
       width="400px"
+      append-to-body
+      :modal-append-to-body="true"
     >
       <div v-if="selectedEvent" class="event-details">
         <div class="detail-item">
@@ -110,7 +112,7 @@ const calendarOptions = computed(() => ({
   buttonText: {
     today: '今天',
     month: '月',
-    week: '周'
+    week: '週'
   },
   events: calendarEvents.value,
   eventClick: handleEventClick,
@@ -146,6 +148,7 @@ const goToSubscriptions = () => {
 .calendar-view {
   max-width: 1400px;
   margin: 0 auto;
+  position: relative;
 }
 
 .page-title {

@@ -55,7 +55,7 @@
             <h3>支出類別分佈</h3>
           </template>
           <div class="chart-container">
-            <Pie v-if="chartData.labels.length > 0" :data="chartData" :options="chartOptions" />
+            <Pie v-if="chartData.labels.length > 0" :key="chartKey" :data="chartData" :options="chartOptions" />
             <div v-else class="no-data">
               <el-empty description="暫無資料" />
             </div>
@@ -66,7 +66,7 @@
       <el-col :span="12">
         <el-card class="upcoming-card">
           <template #header>
-            <h3>7 天內即將到期</h3>
+            <h3>7 天內即將扣款</h3>
           </template>
           <div class="upcoming-list">
             <div v-if="upcomingSubscriptions.length > 0">
@@ -94,18 +94,21 @@
       </el-col>
     </el-row>
 
-    <!-- 每週花費折線圖 -->
+    <!-- 月支出折線圖 -->
     <el-row :gutter="20" class="line-chart-row">
       <el-col :span="24">
         <el-card class="line-chart-card">
           <template #header>
             <div class="chart-header">
-              <h3>未來 12 週花費趨勢</h3>
-              <el-tag type="info">預估數據</el-tag>
+              <h3>過去 6 個月 & 未來 6 個月支出趨勢</h3>
+              <div>
+                <el-tag color="#52C9A6" style="color: white; border: none;">歷史數據</el-tag>
+                <el-tag color="#6495ED" style="color: white; border: none; margin-left: 8px">預估數據</el-tag>
+              </div>
             </div>
           </template>
           <div class="line-chart-container">
-            <Line :data="lineChartData" :options="lineChartOptions" />
+            <Line :key="chartKey" :data="lineChartData" :options="lineChartOptions" />
           </div>
         </el-card>
       </el-col>
@@ -114,7 +117,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { Pie, Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -135,6 +138,9 @@ import dayjs from 'dayjs'
 import isoWeek from 'dayjs/plugin/isoWeek'
 
 dayjs.extend(isoWeek)
+
+// 用于强制图表重新渲染
+const chartKey = ref(0)
 
 // 註冊 Chart.js 元件
 ChartJS.register(
@@ -206,31 +212,37 @@ const formatDate = (date) => {
   return d.format('MM/DD (ddd)')
 }
 
-// 計算未來 12 週的花費數據
-const weeklySpendingData = computed(() => {
-  const weeks = []
+// 計算過去 6 個月 + 未來 6 個月的花費數據
+const monthlySpendingData = computed(() => {
+  const months = []
   const today = dayjs()
 
-  // 生成未來 12 週的數據
-  for (let i = 0; i < 12; i++) {
-    const weekStart = today.add(i, 'week').startOf('week')
-    const weekEnd = weekStart.endOf('week')
+  // 生成過去 6 個月到未來 6 個月的數據（共 13 個月，包含當月）
+  for (let i = -6; i <= 6; i++) {
+    const monthStart = today.add(i, 'month').startOf('month')
+    const monthEnd = monthStart.endOf('month')
+    const isPast = i < 0
+    const isCurrent = i === 0
 
-    let weekTotal = 0
+    let monthTotal = 0
 
-    // 計算這一週內的所有扣款
+    // 計算這個月內的所有扣款
     subscriptions.value.forEach(sub => {
       let currentDate = dayjs(sub.nextPaymentDate)
-      const endDate = weekEnd.add(1, 'year') // 查看一年內的重複扣款
+      const endDate = monthEnd.add(2, 'year') // 查看 2 年內的重複扣款
 
       // 根據週期生成重複扣款
       while (currentDate.isBefore(endDate)) {
-        if (currentDate.isAfter(weekStart) && currentDate.isBefore(weekEnd.add(1, 'day'))) {
-          weekTotal += sub.amount
+        if (currentDate.isSameOrAfter(monthStart) && currentDate.isSameOrBefore(monthEnd)) {
+          monthTotal += sub.amount
         }
 
         // 計算下次扣款日期
-        if (sub.cycle === 'monthly') {
+        if (sub.cycle === 'daily') {
+          currentDate = currentDate.add(1, 'day')
+        } else if (sub.cycle === 'weekly') {
+          currentDate = currentDate.add(1, 'week')
+        } else if (sub.cycle === 'monthly') {
           currentDate = currentDate.add(1, 'month')
         } else if (sub.cycle === 'quarterly') {
           currentDate = currentDate.add(3, 'month')
@@ -242,35 +254,61 @@ const weeklySpendingData = computed(() => {
       }
     })
 
-    weeks.push({
-      label: `${weekStart.format('MM/DD')}`,
-      fullLabel: `第 ${i + 1} 週 (${weekStart.format('MM/DD')} - ${weekEnd.format('MM/DD')})`,
-      amount: weekTotal
+    months.push({
+      label: monthStart.format('YYYY/MM'),
+      shortLabel: monthStart.format('MM月'),
+      fullLabel: `${monthStart.format('YYYY年MM月')}`,
+      amount: monthTotal,
+      isPast,
+      isCurrent
     })
   }
 
-  return weeks
+  return months
 })
 
 // 折線圖數據
 const lineChartData = computed(() => {
-  const data = weeklySpendingData.value
+  const data = monthlySpendingData.value
+  const currentIndex = 6 // 當前月份的索引（過去 6 個月後）
+
+  // 分割成歷史數據和預估數據
+  const historicalData = data.slice(0, currentIndex + 1).map(m => m.amount)
+  const forecastData = new Array(currentIndex).fill(null).concat(data.slice(currentIndex).map(m => m.amount))
+
   return {
-    labels: data.map(w => w.label),
-    datasets: [{
-      label: '週支出',
-      data: data.map(w => w.amount),
-      borderColor: '#5b8def',
-      backgroundColor: 'rgba(91, 141, 239, 0.12)',
-      borderWidth: 2,
-      tension: 0.4,
-      fill: true,
-      pointRadius: 4,
-      pointHoverRadius: 6,
-      pointBackgroundColor: '#5b8def',
-      pointBorderColor: '#fff',
-      pointBorderWidth: 2
-    }]
+    labels: data.map(m => m.shortLabel),
+    datasets: [
+      {
+        label: '歷史支出',
+        data: historicalData,
+        borderColor: '#52C9A6',
+        backgroundColor: 'rgba(82, 201, 166, 0.1)',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: '#52C9A6',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2
+      },
+      {
+        label: '預估支出',
+        data: forecastData,
+        borderColor: '#6495ED',
+        backgroundColor: 'rgba(100, 149, 237, 0.1)',
+        borderWidth: 2,
+        borderDash: [5, 5],
+        tension: 0.4,
+        fill: true,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: '#6495ED',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2
+      }
+    ]
   }
 })
 
@@ -279,19 +317,49 @@ const lineChartOptions = {
   responsive: true,
   maintainAspectRatio: true,
   aspectRatio: 3,
+  animation: {
+    duration: 1500,
+    easing: 'easeInOutQuart',
+    delay: (context) => {
+      let delay = 0
+      if (context.type === 'data' && context.mode === 'default') {
+        delay = context.dataIndex * 100
+      }
+      return delay
+    }
+  },
+  interaction: {
+    mode: 'index',
+    intersect: false
+  },
   plugins: {
     legend: {
       display: true,
       position: 'top'
     },
     tooltip: {
+      enabled: true,
+      mode: 'index',
+      intersect: false,
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      padding: 12,
+      titleFont: {
+        size: 14,
+        weight: 'bold'
+      },
+      bodyFont: {
+        size: 13
+      },
       callbacks: {
         title: function(context) {
           const index = context[0].dataIndex
-          return weeklySpendingData.value[index].fullLabel
+          const monthData = monthlySpendingData.value[index]
+          return monthData.fullLabel + (monthData.isCurrent ? ' (本月)' : '')
         },
         label: function(context) {
-          return `支出: NT$ ${context.parsed.y.toFixed(0)}`
+          if (context.parsed.y === null) return null
+          const label = context.dataset.label || ''
+          return `${label}: NT$ ${context.parsed.y.toFixed(0)}`
         }
       }
     }
@@ -315,6 +383,19 @@ const lineChartOptions = {
     }
   }
 }
+
+// 处理窗口大小变化
+const handleResize = () => {
+  chartKey.value += 1
+}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
 </script>
 
 <style scoped>
@@ -375,11 +456,26 @@ const lineChartOptions = {
 
 .charts-row {
   margin-top: 20px;
+  display: flex;
+}
+
+.charts-row .el-col {
+  display: flex;
 }
 
 .chart-card,
 .upcoming-card {
   min-height: 400px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.upcoming-card :deep(.el-card__body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 !important;
 }
 
 .chart-card h3,
@@ -395,12 +491,20 @@ const lineChartOptions = {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 300px;
+  min-height: 400px;
 }
 
 .upcoming-list {
-  max-height: 340px;
   overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.upcoming-list > div:first-child {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .upcoming-item {

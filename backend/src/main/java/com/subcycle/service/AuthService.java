@@ -3,22 +3,31 @@ package com.subcycle.service;
 import com.subcycle.dto.AuthResponse;
 import com.subcycle.dto.LoginRequest;
 import com.subcycle.dto.RegisterRequest;
+import com.subcycle.dto.ForgotPasswordRequest;
+import com.subcycle.dto.ResetPasswordRequest;
 import com.subcycle.entity.User;
 import com.subcycle.entity.Category;
+import com.subcycle.entity.PasswordResetToken;
 import com.subcycle.repository.UserRepository;
 import com.subcycle.repository.CategoryRepository;
+import com.subcycle.repository.PasswordResetTokenRepository;
 import com.subcycle.security.JwtUtil;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * 認證服務
@@ -33,6 +42,9 @@ public class AuthService {
     private CategoryRepository categoryRepository;
 
     @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -41,13 +53,18 @@ public class AuthService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private RefreshTokenService refreshTokenService;
+
     /**
      * 用戶註冊
      */
     public AuthResponse register(RegisterRequest request) {
         // 檢查 email 是否已存在
         if (userRepository.existsByEmail(request.getEmail())) {
-            return new AuthResponse(null, null, null, null, "此電子郵件已被註冊");
+            AuthResponse errorResponse = new AuthResponse();
+            errorResponse.setMessage("此電子郵件已被註冊");
+            return errorResponse;
         }
 
         // 創建新用戶
@@ -63,10 +80,11 @@ public class AuthService {
         // 建立預設類別
         createDefaultCategories(user);
 
-        // 生成 JWT
+        // 生成 JWT 和 Refresh Token
         String token = jwtUtil.generateToken(user);
+        String refreshToken = refreshTokenService.createRefreshToken(user);
 
-        return new AuthResponse(token, user.getId(), user.getEmail(), user.getName());
+        return new AuthResponse(token, refreshToken, user.getId(), user.getEmail(), user.getName());
     }
 
     /**
@@ -86,13 +104,16 @@ public class AuthService {
             user.setLastLoginAt(LocalDateTime.now());
             userRepository.save(user);
 
-            // 生成 JWT
+            // 生成 JWT 和 Refresh Token
             String token = jwtUtil.generateToken(user);
+            String refreshToken = refreshTokenService.createRefreshToken(user);
 
-            return new AuthResponse(token, user.getId(), user.getEmail(), user.getName());
+            return new AuthResponse(token, refreshToken, user.getId(), user.getEmail(), user.getName());
 
         } catch (AuthenticationException e) {
-            return new AuthResponse(null, null, null, null, "電子郵件或密碼錯誤");
+            AuthResponse errorResponse = new AuthResponse();
+            errorResponse.setMessage("電子郵件或密碼錯誤");
+            return errorResponse;
         }
     }
 
@@ -124,5 +145,102 @@ public class AuthService {
         category.setColor(color);
         category.setSortOrder(sortOrder);
         return category;
+    }
+
+    /**
+     * 忘記密碼 - 生成重設 token
+     */
+    @Transactional
+    public Map<String, Object> forgotPassword(ForgotPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+
+        // 為了安全性，不論使用者是否存在，都返回成功訊息
+        // 這樣可以避免透過此 API 探測哪些 email 已註冊
+        if (user == null) {
+            return Map.of("success", true, "message", "如果該電子郵件存在，我們已發送重置連結");
+        }
+
+        // 刪除該用戶之前的重設 token（如果有）
+        passwordResetTokenRepository.deleteByUser(user);
+
+        // 生成新的重設 token
+        String token = UUID.randomUUID().toString();
+        PasswordResetToken resetToken = new PasswordResetToken();
+        resetToken.setUser(user);
+        resetToken.setToken(token);
+        resetToken.setExpiryDate(LocalDateTime.now().plusHours(1)); // 1 小時有效期
+
+        passwordResetTokenRepository.save(resetToken);
+
+        // TODO: 在實際環境中，這裡應該發送 Email
+        // 暫時在開發環境中返回 token（正式環境請移除）
+        return Map.of(
+                "success", true,
+                "message", "如果該電子郵件存在，我們已發送重置連結",
+                "token", token  // 開發用，正式環境請移除此行
+        );
+    }
+
+    /**
+     * 驗證重設 token 是否有效
+     */
+    public Map<String, Object> verifyResetToken(String token) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "無效的重置連結"));
+
+        if (resetToken.isExpired()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "重置連結已過期");
+        }
+
+        return Map.of(
+                "success", true,
+                "email", resetToken.getUser().getEmail()
+        );
+    }
+
+    /**
+     * 重設密碼
+     */
+    @Transactional
+    public Map<String, Object> resetPassword(ResetPasswordRequest request) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(request.getToken())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "無效的重置連結"));
+
+        if (resetToken.isExpired()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "重置連結已過期");
+        }
+
+        // 更新密碼
+        User user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        // 刪除已使用的 token
+        passwordResetTokenRepository.delete(resetToken);
+
+        return Map.of("success", true, "message", "密碼重置成功");
+    }
+
+    /**
+     * 使用 Refresh Token 獲取新的 Access Token
+     */
+    public AuthResponse refreshAccessToken(String refreshTokenString) {
+        // 驗證 refresh token
+        com.subcycle.entity.RefreshToken refreshToken = refreshTokenService.verifyRefreshToken(refreshTokenString);
+
+        User user = refreshToken.getUser();
+
+        // 生成新的 Access Token（保留原有的 Refresh Token）
+        String newAccessToken = jwtUtil.generateToken(user);
+
+        return new AuthResponse(newAccessToken, refreshTokenString, user.getId(), user.getEmail(), user.getName());
+    }
+
+    /**
+     * 登出 - 撤銷 Refresh Token
+     */
+    public Map<String, Object> logout(User user) {
+        refreshTokenService.revokeRefreshToken(user);
+        return Map.of("success", true, "message", "登出成功");
     }
 }

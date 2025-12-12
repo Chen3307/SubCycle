@@ -7,6 +7,7 @@ export const useSubscriptionStore = defineStore('subscription', () => {
   const subscriptions = ref([])
   const loading = ref(false)
   const error = ref(null)
+  const readNotifications = ref(JSON.parse(localStorage.getItem('readNotifications') || '[]'))
 
   const fetchSubscriptions = async () => {
     try {
@@ -48,7 +49,7 @@ export const useSubscriptionStore = defineStore('subscription', () => {
     }, 0)
   })
 
-  // 取得 7 天內即將到期的項目
+  // 取得 7 天內即將到期的項目（用於儀表板，顯示所有）
   const upcomingSubscriptions = computed(() => {
     const today = dayjs()
     const next7Days = today.add(7, 'day')
@@ -60,6 +61,25 @@ export const useSubscriptionStore = defineStore('subscription', () => {
       })
       .sort((a, b) => dayjs(a.nextPaymentDate).diff(dayjs(b.nextPaymentDate)))
   })
+
+  // 取得未讀的即將到期項目（用於右上角通知）
+  const unreadUpcomingSubscriptions = computed(() => {
+    return upcomingSubscriptions.value.filter(sub => !readNotifications.value.includes(sub.id))
+  })
+
+  // 標記通知為已讀
+  const markNotificationAsRead = (subscriptionId) => {
+    if (!readNotifications.value.includes(subscriptionId)) {
+      readNotifications.value.push(subscriptionId)
+      localStorage.setItem('readNotifications', JSON.stringify(readNotifications.value))
+    }
+  }
+
+  // 清除所有已讀通知
+  const clearReadNotifications = () => {
+    readNotifications.value = []
+    localStorage.removeItem('readNotifications')
+  }
 
   // 新增訂閱
   const addSubscription = async (subscription) => {
@@ -108,6 +128,7 @@ export const useSubscriptionStore = defineStore('subscription', () => {
   const clear = () => {
     subscriptions.value = []
     error.value = null
+    clearReadNotifications()
   }
 
   // 載入模擬數據（用於前端預覽）
@@ -176,11 +197,14 @@ export const useSubscriptionStore = defineStore('subscription', () => {
     next30DaysTotal,
     monthlyAverage,
     upcomingSubscriptions,
+    unreadUpcomingSubscriptions,
     fetchSubscriptions,
     addSubscription,
     updateSubscription,
     deleteSubscription,
     clear,
-    loadMockData
+    loadMockData,
+    markNotificationAsRead,
+    clearReadNotifications
   }
 })

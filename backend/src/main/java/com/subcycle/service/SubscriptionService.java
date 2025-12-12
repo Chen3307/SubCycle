@@ -7,7 +7,13 @@ import com.subcycle.entity.Subscription;
 import com.subcycle.entity.User;
 import com.subcycle.repository.CategoryRepository;
 import com.subcycle.repository.SubscriptionRepository;
+import com.subcycle.specification.SubscriptionSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -31,6 +37,37 @@ public class SubscriptionService {
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    public Page<SubscriptionResponse> getSubscriptionsWithPagination(
+            User user,
+            String search,
+            String status,
+            Long categoryId,
+            String billingCycle,
+            int page,
+            int size,
+            String sortBy,
+            String sortDirection
+    ) {
+        // 建立排序
+        Sort.Direction direction = "desc".equalsIgnoreCase(sortDirection)
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+        Sort sort = Sort.by(direction, sortBy != null ? sortBy : "nextPaymentDate");
+
+        // 建立分頁
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        // 建立查詢條件
+        Specification<Subscription> spec = SubscriptionSpecification.filterSubscriptions(
+                user, search, status, categoryId, billingCycle);
+
+        // 執行分頁查詢
+        Page<Subscription> subscriptionPage = subscriptionRepository.findAll(spec, pageable);
+
+        // 轉換為 Response
+        return subscriptionPage.map(this::toResponse);
     }
 
     public SubscriptionResponse createSubscription(User user, SubscriptionRequest request) {

@@ -35,7 +35,7 @@ const showLayout = computed(() => {
 
 // 通知相關
 const notificationVisible = ref(false)
-const upcomingSubscriptions = computed(() => subscriptionStore.upcomingSubscriptions)
+const upcomingSubscriptions = computed(() => subscriptionStore.unreadUpcomingSubscriptions)
 const notificationCount = computed(() => upcomingSubscriptions.value.length)
 
 // 快速新增訂閱對話框
@@ -53,6 +53,10 @@ const handleLogout = async () => {
 
 const handleQuickAdd = () => {
   router.push('/subscriptions')
+}
+
+const handleNotificationClick = (subscription) => {
+  subscriptionStore.markNotificationAsRead(subscription.id)
 }
 
 // 載入模擬數據（開發用）
@@ -189,7 +193,7 @@ watch(
               </template>
               <div class="notification-content">
                 <div class="notification-header">
-                  <h4>即將到期的訂閱</h4>
+                  <h4>即將扣款的項目</h4>
                   <el-tag size="small" type="warning">{{ notificationCount }} 項</el-tag>
                 </div>
                 <div class="notification-list">
@@ -198,6 +202,7 @@ watch(
                       v-for="sub in upcomingSubscriptions"
                       :key="sub.id"
                       class="notification-item"
+                      @click="handleNotificationClick(sub)"
                     >
                       <div class="notification-item-info">
                         <div class="notification-item-name">{{ sub.name }}</div>
@@ -207,7 +212,7 @@ watch(
                     </div>
                   </div>
                   <div v-else class="no-notifications">
-                    <el-empty description="暫無即將到期的訂閱" :image-size="80" />
+                    <el-empty description="暫無即將扣款的項目" :image-size="80" />
                   </div>
                 </div>
               </div>

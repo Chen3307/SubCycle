@@ -17,7 +17,10 @@
         </el-table-column>
         <el-table-column label="週期" width="120">
           <template #default="{ row }">
-            <el-tag :type="getCycleTagType(row.cycle)">
+            <el-tag
+              :color="getCycleTagColor(row.cycle)"
+              :style="{ color: 'white', border: 'none' }"
+            >
               {{ getCycleText(row.cycle) }}
             </el-tag>
           </template>
@@ -290,13 +293,13 @@ const getCycleText = (cycle) => {
   return cycleMap[cycle] || cycle
 }
 
-const getCycleTagType = (cycle) => {
-  const typeMap = {
-    monthly: 'success',
-    quarterly: 'warning',
-    yearly: 'danger'
+const getCycleTagColor = (cycle) => {
+  const colorMap = {
+    monthly: '#52C9A6',
+    quarterly: '#E6A23C',
+    yearly: '#F56C6C'
   }
-  return typeMap[cycle] || 'info'
+  return colorMap[cycle] || '#909399'
 }
 
 const getMonthlyAmount = (subscription) => {

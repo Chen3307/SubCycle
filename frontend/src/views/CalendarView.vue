@@ -74,8 +74,8 @@ const calendarEvents = computed(() => {
       events.push({
         title: sub.name,
         start: currentDate.format('YYYY-MM-DD'),
-        backgroundColor: category?.color || '#409EFF',
-        borderColor: category?.color || '#409EFF',
+        backgroundColor: category?.color || '#5b8def',
+        borderColor: category?.color || '#5b8def',
         extendedProps: {
           amount: sub.amount,
           cycle: sub.cycle,
@@ -163,7 +163,7 @@ const goToSubscriptions = () => {
   display: flex;
   justify-content: space-between;
   padding: 12px 0;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid var(--border-color);
   transition: border-color 0.3s ease;
 }
 
@@ -189,14 +189,14 @@ html.dark .detail-item {
 }
 
 .detail-value.amount {
-  color: #409eff;
+  color: var(--accent-blue);
   font-size: 18px;
   font-weight: bold;
   transition: color 0.3s ease;
 }
 
 html.dark .detail-value.amount {
-  color: #66b1ff;
+  color: var(--accent-mint);
 }
 
 /* FullCalendar 自定義樣式 */
@@ -213,19 +213,19 @@ html.dark .detail-value.amount {
 }
 
 :deep(.fc-button) {
-  background-color: #409eff;
-  border-color: #409eff;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
   text-transform: none;
 }
 
 :deep(.fc-button:hover) {
-  background-color: #66b1ff;
-  border-color: #66b1ff;
+  background-color: #79a4ff;
+  border-color: #79a4ff;
 }
 
 :deep(.fc-button-active) {
-  background-color: #337ecc !important;
-  border-color: #337ecc !important;
+  background-color: #3f6fd6 !important;
+  border-color: #3f6fd6 !important;
 }
 
 :deep(.fc-event) {
@@ -271,7 +271,7 @@ html.dark :deep(.fc-daygrid-day-number) {
 }
 
 html.dark :deep(.fc-day-today) {
-  background-color: rgba(64, 158, 255, 0.1) !important;
+  background-color: rgba(91, 141, 239, 0.18) !important;
 }
 
 html.dark :deep(.fc) {

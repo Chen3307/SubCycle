@@ -4,7 +4,7 @@
       <!-- Logo -->
       <div class="logo-section">
         <LogoIcon class="logo" />
-        <h1>SubCycle</h1>
+        <h1>Subcycle</h1>
       </div>
 
       <!-- 標題 -->
@@ -170,7 +170,7 @@ const goToLogin = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, rgba(141, 234, 195, 0.18) 0%, rgba(91, 141, 239, 0.2) 100%);
   padding: 20px;
 }
 
@@ -197,7 +197,7 @@ const goToLogin = () => {
 .logo-section h1 {
   font-size: 28px;
   font-weight: bold;
-  color: #409EFF;
+  color: var(--accent-blue);
   margin: 0;
 }
 
@@ -208,12 +208,12 @@ const goToLogin = () => {
 
 .header h2 {
   font-size: 24px;
-  color: #333;
+  color: var(--text-primary);
   margin: 0 0 10px 0;
 }
 
 .subtitle {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.6;
   margin: 0;
@@ -254,11 +254,11 @@ const goToLogin = () => {
   text-align: center;
   margin-top: 24px;
   padding-top: 24px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border-light);
 }
 
 .resend-text {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 14px;
   margin: 0 0 8px 0;
 }

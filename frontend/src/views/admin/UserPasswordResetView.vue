@@ -506,7 +506,7 @@ onMounted(() => {
 
 .helper-text {
   font-size: 12px;
-  color: #999;
+  color: var(--text-tertiary);
   margin: 5px 0 0 0;
 }
 
@@ -520,7 +520,7 @@ onMounted(() => {
 }
 
 .no-selection {
-  color: #999;
+  color: var(--text-tertiary);
   font-size: 14px;
   margin: 0;
 }
@@ -531,7 +531,7 @@ onMounted(() => {
 
 .temp-password-label {
   font-size: 14px;
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 10px;
 }
 
@@ -546,8 +546,8 @@ onMounted(() => {
 .temp-password {
   font-size: 24px;
   font-family: 'Courier New', monospace;
-  color: #409EFF;
-  background-color: #f5f5f5;
+  color: var(--accent-blue);
+  background-color: var(--bg-secondary);
   padding: 10px 20px;
   border-radius: 5px;
   font-weight: bold;

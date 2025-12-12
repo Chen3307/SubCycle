@@ -86,6 +86,7 @@ npm run dev
 
 - **Vue 3** - 前端框架 (Composition API)
 - **Vue Router** - 路由管理
+
 - **Pinia** - 狀態管理
 - **Element Plus** - UI 元件庫
 - **Chart.js** - 資料視覺化

@@ -6,56 +6,61 @@
 
 /* 定義 CSS 變量 - 淺色模式 */
 :root {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f5f7fa;
-  --bg-sidebar: #545c64;
-  --bg-sidebar-header: #434a50;
+  --accent-mint: #8deac3;
+  --accent-blue: #5b8def;
+  --accent-charcoal: #1f2a33;
+  --soft-white: #f7fbff;
 
-  --text-primary: #303133;
-  --text-secondary: #606266;
-  --text-tertiary: #909399;
-  --text-inverse: #ffffff;
+  --bg-primary: #f7fbff;
+  --bg-secondary: #eef6f2;
+  --bg-sidebar: var(--accent-charcoal);
+  --bg-sidebar-header: #24303a;
 
-  --border-color: #e4e7ed;
-  --border-light: #ebeef5;
+  --text-primary: var(--accent-charcoal);
+  --text-secondary: #3c4a55;
+  --text-tertiary: #6f7f8c;
+  --text-inverse: #f7fbff;
+
+  --border-color: #d4e4dd;
+  --border-light: #e5f0eb;
 
   --card-bg: #ffffff;
-  --hover-bg: #f5f7fa;
+  --hover-bg: #e4f5ef;
 
-  --primary-color: #409eff;
-  --success-color: #67c23a;
-  --warning-color: #e6a23c;
+  --primary-color: var(--accent-blue);
+  --success-color: #70d5b4;
+  --warning-color: #f0c572;
   --danger-color: #f56c6c;
 
-  --logo-color: #ffd04b;
-  --menu-active-text: #ffd04b;
+  --logo-color: var(--accent-mint);
+  --menu-active-text: var(--accent-mint);
 }
 
 /* 深色模式變量 */
 html.dark {
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #242424;
-  --bg-sidebar: #1f1f1f;
-  --bg-sidebar-header: #171717;
+  --bg-primary: #111820;
+  --bg-secondary: #16222b;
+  --bg-sidebar: #0d141b;
+  --bg-sidebar-header: #0b1016;
 
-  --text-primary: #e5e5e5;
-  --text-secondary: #d4d4d4;
-  --text-tertiary: #a3a3a3;
-  --text-inverse: #ffffff;
+  --text-primary: #e6f2ed;
+  --text-secondary: #c4d4ce;
+  --text-tertiary: #8fa1a0;
+  --text-inverse: #f7fbff;
 
-  --border-color: #404040;
-  --border-light: #333333;
+  --border-color: #23303a;
+  --border-light: #2f3d48;
 
-  --card-bg: #262626;
-  --hover-bg: #2d2d2d;
+  --card-bg: #121b23;
+  --hover-bg: #1c2a35;
 
-  --primary-color: #409eff;
-  --success-color: #67c23a;
-  --warning-color: #e6a23c;
+  --primary-color: var(--accent-blue);
+  --success-color: #7fdcb7;
+  --warning-color: #f0c572;
   --danger-color: #f56c6c;
 
-  --logo-color: #ffd04b;
-  --menu-active-text: #ffd04b;
+  --logo-color: var(--accent-mint);
+  --menu-active-text: var(--accent-mint);
 }
 
 /* 深色模式下的 Element Plus 組件樣式 */
@@ -324,7 +329,7 @@ html.dark .el-menu-item:not(.is-disabled):hover {
 
 body {
   margin: 0;
-  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+  font-family: 'Noto Sans TC', 'Source Han Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--bg-secondary);
@@ -390,13 +395,13 @@ html.dark .el-button--small {
 }
 
 html.dark .el-button--primary.el-button--small {
-  background-color: #409eff;
-  border-color: #409eff;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
 }
 
 html.dark .el-button--primary.el-button--small:hover {
-  background-color: #66b1ff;
-  border-color: #66b1ff;
+  background-color: #79a4ff;
+  border-color: #79a4ff;
 }
 
 html.dark .el-button--danger.el-button--small {

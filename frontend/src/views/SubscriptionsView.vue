@@ -2,7 +2,7 @@
   <div class="subscriptions-view">
     <div class="header-section">
       <h1 class="page-title">訂閱管理</h1>
-      <el-button type="primary" :icon="Plus" @click="openAddDialog">
+      <el-button type="primary" class="add-subscription-btn" :icon="Plus" @click="openAddDialog">
         新增訂閱
       </el-button>
     </div>
@@ -97,7 +97,13 @@
         </el-form-item>
 
         <el-form-item label="類別" prop="categoryId">
-          <el-select v-model="form.categoryId" placeholder="請選擇類別" style="width: 100%">
+          <el-select
+            v-model="form.categoryId"
+            :placeholder="categoryPlaceholder"
+            style="width: 100%"
+            :loading="categoryLoading"
+            :disabled="categoryLoading || categories.length === 0"
+          >
             <el-option
               v-for="category in categories"
               :key="category.id"
@@ -117,7 +123,7 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, onMounted, watch } from 'vue'
 import { useSubscriptionStore } from '../stores/subscription'
 import { useCategoryStore } from '../stores/category'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -129,6 +135,8 @@ const categoryStore = useCategoryStore()
 
 const subscriptions = computed(() => subscriptionStore.subscriptions)
 const categories = computed(() => categoryStore.categories)
+const categoryLoading = computed(() => categoryStore.loading)
+const categoryPlaceholder = computed(() => categories.value.length ? '請選擇類別' : '請先建立類別')
 
 const dialogVisible = ref(false)
 const dialogMode = ref('add')
@@ -140,8 +148,39 @@ const form = reactive({
   amount: 0,
   cycle: 'monthly',
   nextPaymentDate: '',
-  categoryId: 1
+  categoryId: null
 })
+
+const setDefaultCategory = () => {
+  if (categories.value.length > 0) {
+    form.categoryId = categories.value[0].id
+  } else {
+    form.categoryId = null
+  }
+}
+
+onMounted(async () => {
+  try {
+    // 總是重新抓類別，以確保新增的預設類別（如健康）會顯示
+    await categoryStore.fetchCategories()
+    setDefaultCategory()
+    if (!subscriptions.value.length) {
+      await subscriptionStore.fetchSubscriptions()
+    }
+  } catch (error) {
+    ElMessage.error(error.response?.data?.message || '載入資料失敗')
+  }
+})
+
+watch(
+  () => categories.value.length,
+  () => {
+    // 類別清單變動時，若尚未選取，套用第一個類別
+    if (!form.categoryId) {
+      setDefaultCategory()
+    }
+  }
+)
 
 const rules = {
   name: [
@@ -186,8 +225,9 @@ const resetForm = () => {
     amount: 0,
     cycle: 'monthly',
     nextPaymentDate: dayjs().format('YYYY-MM-DD'),
-    categoryId: 1
+    categoryId: null
   })
+  setDefaultCategory()
   currentEditId.value = null
   if (formRef.value) {
     formRef.value.resetFields()
@@ -197,17 +237,20 @@ const resetForm = () => {
 const handleSubmit = async () => {
   if (!formRef.value) return
 
-  await formRef.value.validate((valid) => {
-    if (valid) {
+  await formRef.value.validate(async (valid) => {
+    if (!valid) return
+    try {
       if (dialogMode.value === 'add') {
-        subscriptionStore.addSubscription({ ...form })
+        await subscriptionStore.addSubscription({ ...form })
         ElMessage.success('新增成功！')
       } else {
-        subscriptionStore.updateSubscription(currentEditId.value, { ...form })
+        await subscriptionStore.updateSubscription(currentEditId.value, { ...form })
         ElMessage.success('更新成功！')
       }
       dialogVisible.value = false
       resetForm()
+    } catch (error) {
+      ElMessage.error(error.response?.data?.message || '操作失敗，請稍後再試')
     }
   })
 }
@@ -224,10 +267,12 @@ const handleDelete = async (subscription) => {
       }
     )
 
-    subscriptionStore.deleteSubscription(subscription.id)
+    await subscriptionStore.deleteSubscription(subscription.id)
     ElMessage.success('刪除成功！')
-  } catch {
-    // 用戶取消刪除
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.response?.data?.message || '刪除失敗')
+    }
   }
 }
 
@@ -290,12 +335,23 @@ const formatDate = (date) => {
 }
 
 .amount {
-  color: #409eff;
+  color: var(--accent-blue);
   font-weight: 600;
   transition: color 0.3s ease;
 }
 
 html.dark .amount {
-  color: #66b1ff;
+  color: var(--accent-mint);
+}
+
+.add-subscription-btn {
+  background-color: #6495ED;
+  border-color: #6495ED;
+  color: #fff;
+}
+
+.add-subscription-btn:hover {
+  background-color: #4169E1;
+  border-color: #4169E1;
 }
 </style>

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { authAPI } from '../api/index.js'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
@@ -7,38 +8,55 @@ export const useAuthStore = defineStore('auth', () => {
 
   const login = async (email, password) => {
     try {
-      // TODO: 連接後端 API
-      // 暫時使用假資料
-      const mockUser = { id: 1, email, name: '測試用戶' }
-      const mockToken = 'mock-jwt-token-' + Date.now()
+      const response = await authAPI.login(email, password)
+      const { token: jwtToken, userId, email: userEmail, name } = response.data
 
-      user.value = mockUser
-      token.value = mockToken
-      localStorage.setItem('token', mockToken)
-      localStorage.setItem('user', JSON.stringify(mockUser))
+      const userData = { id: userId, email: userEmail, name }
+      user.value = userData
+      token.value = jwtToken
+      localStorage.setItem('token', jwtToken)
+      localStorage.setItem('user', JSON.stringify(userData))
 
       return { success: true }
     } catch (error) {
-      return { success: false, message: error.message }
+      const message = error.response?.data?.message || '登入失敗，請檢查您的電子郵件和密碼'
+      return { success: false, message }
     }
   }
 
   const register = async (email, password, name) => {
     try {
-      // TODO: 連接後端 API
-      // 暫時使用假資料
-      const mockUser = { id: 1, email, name }
-      const mockToken = 'mock-jwt-token-' + Date.now()
+      const response = await authAPI.register(email, password, name)
+      const { token: jwtToken, userId, email: userEmail, name: userName } = response.data
 
-      user.value = mockUser
-      token.value = mockToken
-      localStorage.setItem('token', mockToken)
-      localStorage.setItem('user', JSON.stringify(mockUser))
+      const userData = { id: userId, email: userEmail, name: userName }
+      user.value = userData
+      token.value = jwtToken
+      localStorage.setItem('token', jwtToken)
+      localStorage.setItem('user', JSON.stringify(userData))
 
       return { success: true }
     } catch (error) {
-      return { success: false, message: error.message }
+      const message = error.response?.data?.message || '註冊失敗，請稍後再試'
+      return { success: false, message }
     }
+  }
+
+  const mockLogin = (payload = {}) => {
+    const timestamp = Date.now()
+    const mockUser = {
+      id: payload.id || `mock-${timestamp}`,
+      email: payload.email || 'preview@subcycle.app',
+      name: payload.name || '前端預覽用戶'
+    }
+    const mockToken = payload.token || `mock-token-${timestamp}`
+
+    user.value = mockUser
+    token.value = mockToken
+    localStorage.setItem('token', mockToken)
+    localStorage.setItem('user', JSON.stringify(mockUser))
+
+    return Promise.resolve({ success: true, mock: true, user: mockUser })
   }
 
   const logout = () => {
@@ -68,6 +86,7 @@ export const useAuthStore = defineStore('auth', () => {
     token,
     login,
     register,
+    mockLogin,
     logout,
     checkAuth
   }

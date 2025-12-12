@@ -1,11 +1,12 @@
 <template>
   <div class="login-container">
+    <div class="glow mint"></div>
+    <div class="glow blue"></div>
     <el-card class="login-card">
       <template #header>
         <div class="card-header">
-          <img src="/logo.svg" alt="SubMinder Logo" class="logo-img" />
-          <h2>SubCycle</h2>
-          <p>登入您的帳號</p>
+          <h2>Subcycle</h2>
+          <p>登入帳號</p>
         </div>
       </template>
 
@@ -58,11 +59,11 @@
         <el-form-item>
           <el-button
             size="large"
-            class="login-button"
+            class="preview-button"
             :loading="loading"
-            @click="handleTestLogin"
+            @click="handlePreviewLogin"
           >
-            測試登入（跳過表單驗證）
+            前端預覽
           </el-button>
         </el-form-item>
 
@@ -76,19 +77,15 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { ElMessage } from 'element-plus'
 import UserIcon from '../components/icons/UserIcon.vue'
 import Key1 from '../components/icons/Key1.vue'
-import loginBg from '../assets/login-bg.jpg'
 
 const router = useRouter()
 const authStore = useAuthStore()
-
-// 背景圖片樣式
-const bgStyle = computed(() => `url(${loginBg})`)
 
 const loginFormRef = ref(null)
 const loading = ref(false)
@@ -133,18 +130,15 @@ const handleLogin = async () => {
   })
 }
 
-const handleTestLogin = async () => {
+const handlePreviewLogin = async () => {
   loading.value = true
   try {
-    // 直接使用測試帳號登入，跳過表單驗證
-    const result = await authStore.login('test@example.com', 'test123')
-
-    if (result.success) {
-      ElMessage.success('測試登入成功！')
-      router.push('/dashboard')
-    } else {
-      ElMessage.error(result.message || '登入失敗')
-    }
+    await authStore.mockLogin({
+      email: loginForm.email || 'preview@subcycle.app',
+      name: loginForm.email ? loginForm.email.split('@')[0] : '前端預覽用戶'
+    })
+    ElMessage.success('已啟用前端預覽模式')
+    router.push('/dashboard')
   } catch (error) {
     ElMessage.error('登入時發生錯誤')
   } finally {
@@ -155,88 +149,121 @@ const handleTestLogin = async () => {
 
 <style scoped>
 .login-container {
+  --mint: #8deac3;
+  --charcoal: #1f2a33;
+  --cornflower: #5b8def;
+  --soft-white: #f7fbff;
   width: 100%;
   height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-image: v-bind(bgStyle);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(1200px circle at 15% 20%, rgba(141, 234, 195, 0.28), transparent 45%),
+    radial-gradient(900px circle at 85% 0%, rgba(91, 141, 239, 0.22), transparent 40%),
+    linear-gradient(135deg, #f6fff9 0%, #eef2ff 100%);
 }
 
 .login-card {
   width: 420px;
-  min-width: 420px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(10px);
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 16px;
-  border: none;
+  box-shadow: 0 14px 40px rgba(31, 42, 51, 0.14);
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid rgba(91, 141, 239, 0.12);
+  backdrop-filter: blur(8px);
   overflow: hidden;
+}
+
+.login-card :deep(.el-card__header) {
+  border: none;
+  background: linear-gradient(120deg, rgba(141, 234, 195, 0.24), rgba(91, 141, 239, 0.2));
+  padding: 22px 24px;
 }
 
 .card-header {
   text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: transparent;
-  overflow: hidden;
-  padding: 0 20px;
-}
-
-.login-card :deep(.el-card__header) {
-  background: transparent;
-  border: none;
-}
-
-.logo-img {
-  width: 80px;
-  height: 80px;
-  max-width: 100%;
-  margin-bottom: 16px;
-  object-fit: contain;
+  color: var(--charcoal);
 }
 
 .card-header h2 {
   margin: 0 0 10px 0;
-  color: #303133;
-  font-size: 28px;
-  font-weight: 600;
+  color: var(--charcoal);
+  font-size: 26px;
+  letter-spacing: 0.5px;
+  font-weight: 700;
 }
 
 .card-header p {
   margin: 0;
-  color: #909399;
-  font-size: 14px;
+  color: rgba(31, 42, 51, 0.65);
+  font-size: 13px;
+  letter-spacing: 0.2px;
 }
 
 .login-form {
-  padding: 20px 0;
+  padding: 16px 0 6px;
 }
 
 .login-button {
   width: 100%;
-  font-weight: 500;
+  background: linear-gradient(120deg, var(--cornflower), #70d5b4);
+  border: none;
+  box-shadow: 0 12px 30px rgba(91, 141, 239, 0.25);
+}
+
+.login-button:hover {
+  background: linear-gradient(120deg, #4a7ae0, #6ecfae);
+}
+
+.preview-button {
+  width: 100%;
+  border: 1px solid rgba(31, 42, 51, 0.2);
+  color: var(--charcoal);
+  background: #fff;
+}
+
+.preview-button:hover {
+  border-color: var(--cornflower);
+  color: var(--cornflower);
 }
 
 .register-link {
   text-align: center;
-  color: #606266;
-  font-size: 14px;
+  color: var(--charcoal);
+  font-size: 13px;
   margin-top: 10px;
 }
 
 .register-link a {
-  color: #409eff;
+  color: var(--cornflower);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .register-link a:hover {
   text-decoration: underline;
+}
+
+:deep(.el-form-item) {
+  margin-bottom: 16px;
+}
+
+:deep(.el-input__wrapper) {
+  border-radius: 12px;
+  border: 1px solid rgba(31, 42, 51, 0.12);
+  box-shadow: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background-color: #fff;
+}
+
+:deep(.el-input__wrapper.is-focus) {
+  border-color: var(--cornflower);
+  box-shadow: 0 0 0 4px rgba(91, 141, 239, 0.12);
+}
+
+:deep(.el-input__inner) {
+  color: var(--charcoal);
 }
 
 .custom-icon {
@@ -249,5 +276,33 @@ const handleTestLogin = async () => {
 .custom-icon svg {
   width: 20px;
   height: 20px;
+}
+
+.glow {
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.6;
+  z-index: 0;
+}
+
+.glow.mint {
+  background: rgba(141, 234, 195, 0.38);
+  top: -120px;
+  left: -60px;
+}
+
+.glow.blue {
+  background: rgba(91, 141, 239, 0.3);
+  bottom: -140px;
+  right: -120px;
+}
+
+.login-card,
+.login-form {
+  position: relative;
+  z-index: 1;
 }
 </style>

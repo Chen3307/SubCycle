@@ -1,13 +1,15 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { useSubscriptionStore } from './stores/subscription'
+import { useCategoryStore } from './stores/category'
 import { useThemeStore } from './stores/theme'
 import {
   SwitchButton,
   Plus
 } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import UserIcon from './components/UserIcon.vue'
 import BellIcon from './components/BellIcon.vue'
 import dayjs from 'dayjs'
@@ -20,7 +22,11 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const subscriptionStore = useSubscriptionStore()
+const categoryStore = useCategoryStore()
 const themeStore = useThemeStore()
+
+// 開發模式標記
+const isDev = import.meta.env.DEV
 
 const isLoggedIn = computed(() => !!authStore.token)
 const showLayout = computed(() => {
@@ -38,6 +44,8 @@ const quickAddVisible = ref(false)
 const handleLogout = async () => {
   // 先清理状态
   authStore.logout()
+  subscriptionStore.clear()
+  categoryStore.clear()
 
   // 使用 nextTick 确保 DOM 更新完成后再跳转
   await router.push('/')
@@ -45,6 +53,13 @@ const handleLogout = async () => {
 
 const handleQuickAdd = () => {
   router.push('/subscriptions')
+}
+
+// 載入模擬數據（開發用）
+const loadPreviewData = () => {
+  categoryStore.loadMockData()
+  subscriptionStore.loadMockData()
+  ElMessage.success('已載入預覽模擬數據！')
 }
 
 const formatDate = (date) => {
@@ -61,6 +76,35 @@ const formatDate = (date) => {
 
 // 初始化時檢查登入狀態
 authStore.checkAuth()
+
+const loadData = async () => {
+  if (!authStore.token) return
+  try {
+    await Promise.all([
+      categoryStore.fetchCategories(),
+      subscriptionStore.fetchSubscriptions()
+    ])
+  } catch (error) {
+    // 在 header 區域不打斷使用者流程，錯誤交由各頁面提示
+    console.error('載入資料失敗', error)
+  }
+}
+
+onMounted(() => {
+  loadData()
+})
+
+watch(
+  () => authStore.token,
+  (token) => {
+    if (token) {
+      loadData()
+    } else {
+      subscriptionStore.clear()
+      categoryStore.clear()
+    }
+  }
+)
 </script>
 
 <template>
@@ -69,15 +113,15 @@ authStore.checkAuth()
     <el-aside width="200px" class="sidebar">
       <div class="logo-container">
         <img src="/logo.svg" alt="Logo" class="sidebar-logo" />
-        <h2>SubCycle</h2>
+        <h2>Subcycle</h2>
       </div>
       <el-menu
         :default-active="route.path"
         router
         class="el-menu-vertical"
-        background-color="#545c64"
-        text-color="#fff"
-        active-text-color="#ffd04b"
+        background-color="var(--bg-sidebar)"
+        text-color="var(--text-inverse)"
+        active-text-color="var(--menu-active-text)"
       >
         <el-menu-item index="/dashboard">
           <Dashboard/>
@@ -109,8 +153,23 @@ authStore.checkAuth()
             <h3>{{ route.meta.title || '' }}</h3>
           </div>
           <div class="header-actions">
+            <!-- 預覽數據按鈕（開發用） -->
+            <el-button
+              v-if="isDev"
+              type="success"
+              size="small"
+              @click="loadPreviewData"
+            >
+              載入預覽數據
+            </el-button>
             <!-- 快速新增訂閱按鈕 -->
-            <el-button type="primary" :icon="Plus" @click="handleQuickAdd" size="default">
+            <el-button
+              type="primary"
+              class="quick-add-btn"
+              :icon="Plus"
+              @click="handleQuickAdd"
+              size="default"
+            >
               快速新增
             </el-button>
 
@@ -173,7 +232,7 @@ authStore.checkAuth()
       <el-footer class="footer" height="60px">
         <div class="footer-content">
           <div class="footer-left">
-            <span>&copy; 2025 訂閱追蹤器 SubCycle</span>
+            <span>&copy; 2025 訂閱追蹤器 Subcycle</span>
           </div>
           <div class="footer-right">
             <a href="#" class="footer-link">隱私政策</a>
@@ -235,7 +294,7 @@ authStore.checkAuth()
 
 .logo-container h2 {
   margin: 0;
-  color: #fff;
+  color: var(--text-inverse);
   font-size: 16px;
   font-weight: 600;
 }
@@ -298,6 +357,17 @@ authStore.checkAuth()
   justify-content: center;
 }
 
+.quick-add-btn {
+  background-color: #6495ED;
+  border-color: #6495ED;
+  color: #fff;
+}
+
+.quick-add-btn:hover {
+  background-color: #4169E1;
+  border-color: #4169E1;
+}
+
 .notification-content {
   padding: 0;
 }
@@ -307,7 +377,7 @@ authStore.checkAuth()
   justify-content: space-between;
   align-items: center;
   padding: 15px;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .notification-header h4 {
@@ -330,7 +400,7 @@ authStore.checkAuth()
   justify-content: space-between;
   align-items: center;
   padding: 12px 15px;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid var(--border-color);
   transition: background-color 0.15s ease;
   cursor: pointer;
   /* 啟用 GPU 加速避免殘影 */
@@ -340,7 +410,7 @@ authStore.checkAuth()
 }
 
 .notification-item:hover {
-  background-color: #f5f7fa;
+  background-color: var(--hover-bg);
 }
 
 .notification-item:last-child {
@@ -368,12 +438,12 @@ authStore.checkAuth()
 .notification-item-amount {
   font-size: 14px;
   font-weight: bold;
-  color: #e6a23c;
+  color: var(--accent-blue);
   transition: color 0.3s ease;
 }
 
 html.dark .notification-item-amount {
-  color: #f5b85f;
+  color: var(--accent-mint);
 }
 
 .no-notifications {
@@ -385,7 +455,7 @@ html.dark .notification-item-amount {
   align-items: center;
   gap: 10px;
   padding-left: 15px;
-  border-left: 1px solid #e4e7ed;
+  border-left: 1px solid var(--border-color);
 }
 
 .user-info-icon {
@@ -431,18 +501,18 @@ html.dark .notification-item-amount {
 }
 
 .footer-link {
-  color: #409eff;
+  color: var(--accent-blue);
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .footer-link:hover {
-  color: #66b1ff;
+  color: var(--accent-mint);
   text-decoration: underline;
 }
 
 .separator {
-  color: #dcdfe6;
+  color: var(--border-light);
 }
 
 .auth-container {
@@ -450,6 +520,6 @@ html.dark .notification-item-amount {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, rgba(141, 234, 195, 0.18) 0%, rgba(91, 141, 239, 0.2) 100%);
 }
 </style>

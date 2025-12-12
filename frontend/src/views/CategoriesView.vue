@@ -2,7 +2,7 @@
   <div class="categories-view">
     <div class="header-section">
       <h1 class="page-title">類別管理</h1>
-      <el-button type="primary" :icon="Plus" @click="openAddDialog">
+      <el-button type="primary" class="add-category-btn" :icon="Plus" @click="openAddDialog">
         新增類別
       </el-button>
     </div>
@@ -87,7 +87,7 @@
         <el-form-item label="顏色" prop="color">
           <div class="color-picker-container">
             <el-color-picker v-model="form.color" />
-            <el-input v-model="form.color" placeholder="#409EFF" style="margin-left: 10px" />
+            <el-input v-model="form.color" placeholder="#5b8def" style="margin-left: 10px" />
           </div>
         </el-form-item>
 
@@ -133,20 +133,20 @@ const currentEditId = ref(null)
 
 const form = reactive({
   name: '',
-  color: '#409EFF'
+  color: '#5b8def'
 })
 
 const presetColors = [
-  '#409EFF',
-  '#67C23A',
-  '#E6A23C',
-  '#F56C6C',
-  '#909399',
-  '#8B5CF6',
-  '#EC4899',
-  '#10B981',
-  '#F59E0B',
-  '#3B82F6'
+  '#5b8def',
+  '#8deac3',
+  '#1f2a33',
+  '#70d5b4',
+  '#9dcafc',
+  '#4d6b9c',
+  '#7ad1bc',
+  '#2f3f4a',
+  '#c3d7ff',
+  '#6f8fbf'
 ]
 
 const rules = {
@@ -196,7 +196,7 @@ const openEditDialog = (category) => {
 const resetForm = () => {
   Object.assign(form, {
     name: '',
-    color: '#409EFF'
+    color: '#5b8def'
   })
   currentEditId.value = null
   if (formRef.value) {
@@ -278,7 +278,7 @@ const handleDelete = async (category) => {
   width: 24px;
   height: 24px;
   border-radius: 4px;
-  border: 1px solid #dcdfe6;
+  border: 1px solid var(--border-color);
   transition: border-color 0.3s ease;
 }
 
@@ -287,13 +287,13 @@ html.dark .color-box {
 }
 
 .amount {
-  color: #409eff;
+  color: var(--accent-blue);
   font-weight: 600;
   transition: color 0.3s ease;
 }
 
 html.dark .amount {
-  color: #66b1ff;
+  color: var(--accent-mint);
 }
 
 .stats-container {
@@ -305,7 +305,7 @@ html.dark .amount {
   justify-content: space-between;
   align-items: center;
   padding: 15px 0;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid var(--border-color);
   transition: border-color 0.3s ease;
 }
 
@@ -357,8 +357,19 @@ html.dark .stat-item {
 }
 
 .preset-color-box.active {
-  border-color: #303133;
-  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #303133;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--accent-blue);
+}
+
+.add-category-btn {
+  background-color: #6495ED;
+  border-color: #6495ED;
+  color: #fff;
+}
+
+.add-category-btn:hover {
+  background-color: #4169E1;
+  border-color: #4169E1;
 }
 
 /* 暗色模式下的颜色选择框 */

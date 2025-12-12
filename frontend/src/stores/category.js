@@ -1,15 +1,26 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useSubscriptionStore } from './subscription'
+import { categoryAPI } from '../api/index'
 
 export const useCategoryStore = defineStore('category', () => {
-  const categories = ref([
-    { id: 1, name: '影音娛樂', color: '#409EFF', icon: 'VideoPlay' },
-    { id: 2, name: '工作軟體', color: '#67C23A', icon: 'Briefcase' },
-    { id: 3, name: '健康運動', color: '#F56C6C', icon: 'TrophyBase' },
-    { id: 4, name: '學習成長', color: '#E6A23C', icon: 'Reading' },
-    { id: 5, name: '其他', color: '#909399', icon: 'More' }
-  ])
+  const categories = ref([])
+  const loading = ref(false)
+  const error = ref(null)
+
+  const fetchCategories = async () => {
+    try {
+      loading.value = true
+      const { data } = await categoryAPI.getAll()
+      categories.value = data
+      error.value = null
+    } catch (err) {
+      error.value = err.response?.data?.message || '無法取得類別資料'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
 
   // 計算各類別的支出分佈（用於圓餅圖）
   const categoryDistribution = computed(() => {
@@ -40,12 +51,16 @@ export const useCategoryStore = defineStore('category', () => {
   })
 
   // 新增類別
-  const addCategory = (category) => {
-    const newId = Math.max(...categories.value.map(c => c.id), 0) + 1
-    categories.value.push({
-      ...category,
-      id: newId
-    })
+  const addCategory = async (category) => {
+    const payload = {
+      name: category.name,
+      color: category.color,
+      icon: category.icon,
+      sortOrder: category.sortOrder
+    }
+    const { data } = await categoryAPI.create(payload)
+    categories.value.push(data)
+    return data
   }
 
   // 更新類別
@@ -72,12 +87,38 @@ export const useCategoryStore = defineStore('category', () => {
     return categories.value.find(c => c.id === id)
   }
 
+  const clear = () => {
+    categories.value = []
+    error.value = null
+  }
+
+  // 載入模擬數據（用於前端預覽）
+  const loadMockData = () => {
+    categories.value = [
+      { id: 1, name: '串流影音', color: '#EF4444', icon: 'play-circle' },
+      { id: 2, name: '音樂', color: '#F59E0B', icon: 'music' },
+      { id: 3, name: '雲端儲存', color: '#10B981', icon: 'cloud' },
+      { id: 4, name: '生產力工具', color: '#3B82F6', icon: 'briefcase' },
+      { id: 5, name: '遊戲娛樂', color: '#8B5CF6', icon: 'gamepad' },
+      { id: 6, name: '健康運動', color: '#EC4899', icon: 'heart' },
+      { id: 7, name: '新聞雜誌', color: '#6366F1', icon: 'newspaper' },
+      { id: 8, name: '學習教育', color: '#14B8A6', icon: 'book' },
+      { id: 9, name: '設計開發', color: '#F97316', icon: 'code' },
+      { id: 10, name: '生活購物', color: '#84CC16', icon: 'shopping-cart' }
+    ]
+  }
+
   return {
     categories,
+    loading,
+    error,
     categoryDistribution,
+    fetchCategories,
     addCategory,
     updateCategory,
     deleteCategory,
-    getCategoryById
+    getCategoryById,
+    clear,
+    loadMockData
   }
 })

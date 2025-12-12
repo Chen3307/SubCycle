@@ -9,7 +9,7 @@ SubCycle 訂閱管理系統的後端 API 服務
 - **Java 17** 或以上版本
 - **Maven 3.6+**
 - **MySQL 8.0+**
-- 已建立 `subcycle` 資料庫（使用 `/database` 資料夾中的 SQL 檔案）
+- 已建立 `subcycle\` 資料庫（使用 `/database` 資料夾中的 SQL 檔案）
 
 ### 1. 設定資料庫連線
 
@@ -24,12 +24,14 @@ spring.datasource.password=your_password  # 改成你的 MySQL 密碼
 ### 2. 啟動應用程式
 
 **方式一：使用 Maven 命令**
+
 ```bash
 cd backend
 mvn spring-boot:run
 ```
 
 **方式二：使用 IDE**
+
 - 在 IntelliJ IDEA 或 Eclipse 中開啟 `backend` 資料夾
 - 執行 `SubCycleApplication.java` 主程式
 
@@ -38,11 +40,13 @@ mvn spring-boot:run
 應用程式啟動後（預設 port: 8080），開啟瀏覽器測試：
 
 #### ✅ 測試 API 是否運作
+
 ```
 http://localhost:8080/api/test
 ```
 
 **預期回應：**
+
 ```json
 {
   "status": "success",
@@ -52,11 +56,13 @@ http://localhost:8080/api/test
 ```
 
 #### ✅ 測試資料庫連線
+
 ```
 http://localhost:8080/api/test/db
 ```
 
 **預期回應：**
+
 ```json
 {
   "status": "success",
@@ -67,11 +73,13 @@ http://localhost:8080/api/test/db
 ```
 
 #### ✅ 測試查詢使用者
+
 ```
 http://localhost:8080/api/test/users
 ```
 
 **預期回應：**
+
 ```json
 {
   "status": "success",
@@ -90,11 +98,13 @@ http://localhost:8080/api/test/users
 ```
 
 #### ✅ 測試根據 email 查詢
+
 ```
 http://localhost:8080/api/test/user?email=demo@subcycle.com
 ```
 
 #### ✅ 測試統計資料
+
 ```
 http://localhost:8080/api/test/stats
 ```
@@ -131,6 +141,7 @@ backend/
 
 **解決方法：**
 修改 `application.properties` 中的密碼：
+
 ```properties
 spring.datasource.password=你的正確密碼
 ```
@@ -141,6 +152,7 @@ spring.datasource.password=你的正確密碼
 
 **解決方法：**
 執行資料庫初始化腳本：
+
 ```bash
 cd ../database
 init_db.bat  # Windows
@@ -154,6 +166,7 @@ init_db.bat  # Windows
 
 **解決方法：**
 手動執行 SQL：
+
 ```bash
 mysql -u root -p subcycle < ../database/schema_minimal.sql
 mysql -u root -p subcycle < ../database/seed_minimal.sql
@@ -163,6 +176,7 @@ mysql -u root -p subcycle < ../database/seed_minimal.sql
 
 **解決方法：**
 修改 `application.properties` 中的 port：
+
 ```properties
 server.port=8081  # 改成其他 port
 ```
@@ -174,6 +188,7 @@ server.port=8081  # 改成其他 port
 測試連線成功後，你可以：
 
 1. **建立更多 Entity**：
+
    - `Category.java`
    - `Subscription.java`
    - `Notification.java`

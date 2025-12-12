@@ -7,7 +7,7 @@
       <el-col :span="8">
         <el-card class="stat-card">
           <div class="stat-content">
-            <div class="stat-icon" style="background-color: #409eff">
+            <div class="stat-icon" style="background-color: var(--accent-blue)">
               <el-icon size="32"><TrendCharts /></el-icon>
             </div>
             <div class="stat-info">
@@ -21,7 +21,7 @@
       <el-col :span="8">
         <el-card class="stat-card">
           <div class="stat-content">
-            <div class="stat-icon" style="background-color: #67c23a">
+            <div class="stat-icon" style="background-color: var(--success-color)">
               <el-icon size="32"><Calendar /></el-icon>
             </div>
             <div class="stat-info">
@@ -35,7 +35,7 @@
       <el-col :span="8">
         <el-card class="stat-card">
           <div class="stat-content">
-            <div class="stat-icon" style="background-color: #e6a23c">
+            <div class="stat-icon" style="background-color: var(--accent-charcoal)">
               <el-icon size="32"><List /></el-icon>
             </div>
             <div class="stat-info">
@@ -260,14 +260,14 @@ const lineChartData = computed(() => {
     datasets: [{
       label: '週支出',
       data: data.map(w => w.amount),
-      borderColor: '#409EFF',
-      backgroundColor: 'rgba(64, 158, 255, 0.1)',
+      borderColor: '#5b8def',
+      backgroundColor: 'rgba(91, 141, 239, 0.12)',
       borderWidth: 2,
       tension: 0.4,
       fill: true,
       pointRadius: 4,
       pointHoverRadius: 6,
-      pointBackgroundColor: '#409EFF',
+      pointBackgroundColor: '#5b8def',
       pointBorderColor: '#fff',
       pointBorderWidth: 2
     }]
@@ -408,7 +408,7 @@ const lineChartOptions = {
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid var(--border-color);
   transition: background-color 0.2s;
 }
 
@@ -440,12 +440,12 @@ const lineChartOptions = {
 .upcoming-amount {
   font-size: 18px;
   font-weight: bold;
-  color: #409eff;
+  color: var(--accent-blue);
   transition: color 0.3s ease;
 }
 
 html.dark .upcoming-amount {
-  color: #66b1ff;
+  color: var(--accent-mint);
 }
 
 .no-data {

@@ -4,7 +4,7 @@
       <!-- Logo -->
       <div class="logo-section">
         <LogoIcon class="logo" />
-        <h1>SubCycle</h1>
+        <h1>Subcycle</h1>
       </div>
 
       <!-- 驗證中 -->
@@ -301,7 +301,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, rgba(141, 234, 195, 0.18) 0%, rgba(91, 141, 239, 0.2) 100%);
   padding: 20px;
 }
 
@@ -328,7 +328,7 @@ onMounted(() => {
 .logo-section h1 {
   font-size: 28px;
   font-weight: bold;
-  color: #409EFF;
+  color: var(--accent-blue);
   margin: 0;
 }
 
@@ -339,7 +339,7 @@ onMounted(() => {
 
 .loading-section p {
   margin-top: 16px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .error-section {
@@ -353,12 +353,12 @@ onMounted(() => {
 
 .header h2 {
   font-size: 24px;
-  color: #333;
+  color: var(--text-primary);
   margin: 0 0 10px 0;
 }
 
 .subtitle {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 14px;
   margin: 0;
 }
@@ -373,7 +373,7 @@ onMounted(() => {
 
 .strength-bar {
   height: 4px;
-  background-color: #f0f0f0;
+  background-color: var(--border-light);
   border-radius: 2px;
   overflow: hidden;
   margin-bottom: 8px;
@@ -385,15 +385,15 @@ onMounted(() => {
 }
 
 .strength-bar-fill.strength-weak {
-  background-color: #F56C6C;
+  background-color: var(--danger-color);
 }
 
 .strength-bar-fill.strength-medium {
-  background-color: #E6A23C;
+  background-color: var(--accent-blue);
 }
 
 .strength-bar-fill.strength-strong {
-  background-color: #67C23A;
+  background-color: var(--success-color);
 }
 
 .strength-text {
@@ -402,19 +402,19 @@ onMounted(() => {
 }
 
 .strength-text.strength-weak {
-  color: #F56C6C;
+  color: var(--danger-color);
 }
 
 .strength-text.strength-medium {
-  color: #E6A23C;
+  color: var(--accent-blue);
 }
 
 .strength-text.strength-strong {
-  color: #67C23A;
+  color: var(--success-color);
 }
 
 .password-requirements {
-  background-color: #f8f9fa;
+  background-color: var(--bg-secondary);
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 20px;
@@ -423,7 +423,7 @@ onMounted(() => {
 .requirements-title {
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
   margin: 0 0 12px 0;
 }
 
@@ -438,7 +438,7 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #999;
+  color: var(--text-tertiary);
   margin-bottom: 8px;
   transition: color 0.3s ease;
 }
@@ -448,7 +448,7 @@ onMounted(() => {
 }
 
 .requirements-list li.valid {
-  color: #67C23A;
+  color: var(--success-color);
 }
 
 .requirements-list li .el-icon {

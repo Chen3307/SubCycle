@@ -6,12 +6,11 @@ import { useSubscriptionStore } from './stores/subscription'
 import { useCategoryStore } from './stores/category'
 import { useThemeStore } from './stores/theme'
 import {
-  SwitchButton,
-  Plus
+  SwitchButton
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import UserIcon from './components/UserIcon.vue'
-import BellIcon from './components/BellIcon.vue'
+import UserOutlineIcon from './components/icons/UserOutlineIcon.vue'
+import BellIcon from './components/icons/BellIcon.vue'
 import dayjs from 'dayjs'
 import Class from './components/Class.vue'
 import Subscribe from './components/Subscribe.vue'
@@ -25,21 +24,17 @@ const subscriptionStore = useSubscriptionStore()
 const categoryStore = useCategoryStore()
 const themeStore = useThemeStore()
 
-// 開發模式標記
-const isDev = import.meta.env.DEV
-
 const isLoggedIn = computed(() => !!authStore.token)
+const isAdmin = computed(() => authStore.user?.role === 'ADMIN')
 const showLayout = computed(() => {
   return route.path !== '/login' && route.path !== '/register'
 })
+const isDarkThemeActive = computed(() => themeStore.darkMode && isLoggedIn.value && showLayout.value)
 
 // 通知相關
 const notificationVisible = ref(false)
 const upcomingSubscriptions = computed(() => subscriptionStore.unreadUpcomingSubscriptions)
 const notificationCount = computed(() => upcomingSubscriptions.value.length)
-
-// 快速新增訂閱對話框
-const quickAddVisible = ref(false)
 
 const handleLogout = async () => {
   // 先清理状态
@@ -51,31 +46,24 @@ const handleLogout = async () => {
   await router.push('/')
 }
 
-const handleQuickAdd = () => {
-  router.push('/subscriptions')
-}
-
 const handleNotificationClick = (subscription) => {
   subscriptionStore.markNotificationAsRead(subscription.id)
-}
-
-// 載入模擬數據（開發用）
-const loadPreviewData = () => {
-  categoryStore.loadMockData()
-  subscriptionStore.loadMockData()
-  ElMessage.success('已載入預覽模擬數據！')
+  router.push({
+    path: '/calendar',
+    query: { subscriptionId: String(subscription.id) }
+  })
 }
 
 const formatDate = (date) => {
-  const d = dayjs(date)
-  const today = dayjs()
+  const d = dayjs(date).startOf('day')
+  const today = dayjs().startOf('day')
   const diff = d.diff(today, 'day')
 
   if (diff === 0) return '今天'
   if (diff === 1) return '明天'
   if (diff === 2) return '後天'
 
-  return d.format('MM/DD (ddd)')
+  return dayjs(date).format('MM/DD (ddd)')
 }
 
 // 初始化時檢查登入狀態
@@ -109,11 +97,19 @@ watch(
     }
   }
 )
+
+watch(
+  isDarkThemeActive,
+  (active) => {
+    document.body.classList.toggle('dark-theme', active)
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
   <transition name="fade" mode="out-in">
-    <el-container v-if="isLoggedIn && showLayout" class="layout-container" key="authenticated">
+    <el-container v-if="isLoggedIn && showLayout" class="layout-container" :class="{ 'dark-theme': isDarkThemeActive }" key="authenticated">
     <el-aside width="200px" class="sidebar">
       <div class="logo-container">
         <img src="/logo.svg" alt="Logo" class="sidebar-logo" />
@@ -143,40 +139,41 @@ watch(
           <Class/>
           <span>類別管理</span>
         </el-menu-item>
-        <el-menu-item index="/account/settings">
-          <UserIcon /> 
-          <span>帳戶設定</span>
-        </el-menu-item>
+        <el-sub-menu index="/account/settings">
+          <template #title>
+            <UserOutlineIcon />
+            <span>帳戶設定</span>
+          </template>
+          <el-menu-item index="/account/settings/profile">
+            <span>個人資訊</span>
+          </el-menu-item>
+          <el-menu-item index="/account/settings/password">
+            <span>修改密碼</span>
+          </el-menu-item>
+          <el-menu-item index="/account/settings/notification">
+            <span>通知設定</span>
+          </el-menu-item>
+          <el-menu-item index="/account/settings/preferences">
+            <span>偏好設定</span>
+          </el-menu-item>
+        </el-sub-menu>
+        <el-sub-menu index="/admin" v-if="isAdmin">
+          <template #title>
+            <UserOutlineIcon />
+            <span>管理者</span>
+          </template>
+          <el-menu-item index="/admin/users">
+            <span>用戶管理</span>
+          </el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
 
     <el-container>
       <el-header class="header">
         <div class="header-content">
-          <div class="header-title">
-            <h3>{{ route.meta.title || '' }}</h3>
-          </div>
+          <div class="header-title"></div>
           <div class="header-actions">
-            <!-- 預覽數據按鈕（開發用） -->
-            <el-button
-              v-if="isDev"
-              type="success"
-              size="small"
-              @click="loadPreviewData"
-            >
-              載入預覽數據
-            </el-button>
-            <!-- 快速新增訂閱按鈕 -->
-            <el-button
-              type="primary"
-              class="quick-add-btn"
-              :icon="Plus"
-              @click="handleQuickAdd"
-              size="default"
-            >
-              快速新增
-            </el-button>
-
             <!-- 通知提醒 -->
             <el-popover
               :visible="notificationVisible"
@@ -212,7 +209,7 @@ watch(
                     </div>
                   </div>
                   <div v-else class="no-notifications">
-                    <el-empty description="暫無即將扣款的項目" :image-size="80" />
+                    <el-empty description="暫無扣款通知" :image-size="80" />
                   </div>
                 </div>
               </div>
@@ -220,8 +217,8 @@ watch(
 
             <!-- 用戶資訊 -->
             <div class="user-info">
-              <UserIcon class="user-info-icon" />
-              <span>{{ authStore.user?.name || '用戶' }}</span>
+              <UserOutlineIcon class="user-info-icon" />
+              <span class="user-name">{{ authStore.user?.name || '用戶' }}</span>
               <el-button @click="handleLogout" type="danger" size="small" :icon="SwitchButton">
                 登出
               </el-button>
@@ -317,6 +314,18 @@ watch(
   text-align: center;
 }
 
+.el-menu-vertical :deep(.el-sub-menu__title) {
+  display: flex;
+  align-items: center;
+}
+
+.el-menu-vertical :deep(.el-sub-menu__title svg) {
+  font-size: 18px;
+  margin-right: 10px;
+  width: 20px;
+  text-align: center;
+}
+
 .header {
   background-color: var(--bg-primary);
   border-bottom: 1px solid var(--border-color);
@@ -324,10 +333,12 @@ watch(
   align-items: center;
   padding: 0 20px;
   transition: background-color 0.3s ease, border-color 0.3s ease;
+  height: 63px;
 }
 
 .header-content {
   width: 100%;
+  height: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -350,27 +361,25 @@ watch(
   display: flex;
   align-items: center;
   gap: 15px;
+  height: 100%;
+}
+
+.header-actions > * {
+  display: flex;
+  align-items: center;
 }
 
 .notification-badge {
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
 }
 
 .notification-badge .el-button {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.quick-add-btn {
-  background-color: #6495ED;
-  border-color: #6495ED;
-  color: #fff;
-}
-
-.quick-add-btn:hover {
-  background-color: #4169E1;
-  border-color: #4169E1;
+  margin: 0;
 }
 
 .notification-content {
@@ -447,9 +456,23 @@ watch(
   transition: color 0.3s ease;
 }
 
-html.dark .notification-item-amount {
+:global(.dark-theme) .notification-item-amount {
   color: var(--accent-mint);
 }
+
+:global(.dark-theme) .notification-badge .el-button {
+  background-color: #0f171f;
+  border-color: #2f3d48;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  color: #1f2a33;
+}
+
+:global(.notification-badge .el-button) {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
 
 .no-notifications {
   padding: 20px;
@@ -461,6 +484,12 @@ html.dark .notification-item-amount {
   gap: 10px;
   padding-left: 15px;
   border-left: 1px solid var(--border-color);
+  height: 100%;
+}
+
+.user-name {
+  color: var(--accent-mint);
+  font-weight: 600;
 }
 
 .user-info-icon {

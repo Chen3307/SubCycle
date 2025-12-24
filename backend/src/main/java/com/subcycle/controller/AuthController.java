@@ -2,17 +2,15 @@ package com.subcycle.controller;
 
 import com.subcycle.dto.AuthResponse;
 import com.subcycle.dto.LoginRequest;
-import com.subcycle.dto.RegisterRequest;
-import com.subcycle.dto.ForgotPasswordRequest;
-import com.subcycle.dto.ResetPasswordRequest;
 import com.subcycle.dto.RefreshTokenRequest;
+import com.subcycle.dto.RegisterRequest;
 import com.subcycle.entity.User;
 import com.subcycle.service.AuthService;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -72,38 +70,6 @@ public class AuthController {
     }
 
     /**
-     * 測試端點 - 檢查當前用戶
-     */
-    @GetMapping("/me")
-    public ResponseEntity<String> getCurrentUser() {
-        return ResponseEntity.ok("認證成功！");
-    }
-
-    /**
-     * 忘記密碼 - 發送重設連結
-     */
-    @PostMapping("/forgot-password")
-    public ResponseEntity<Map<String, Object>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
-        return ResponseEntity.ok(authService.forgotPassword(request));
-    }
-
-    /**
-     * 驗證重設 token
-     */
-    @GetMapping("/verify-reset-token/{token}")
-    public ResponseEntity<Map<String, Object>> verifyResetToken(@PathVariable String token) {
-        return ResponseEntity.ok(authService.verifyResetToken(token));
-    }
-
-    /**
-     * 重設密碼
-     */
-    @PostMapping("/reset-password")
-    public ResponseEntity<Map<String, Object>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
-        return ResponseEntity.ok(authService.resetPassword(request));
-    }
-
-    /**
      * 使用 Refresh Token 獲取新的 Access Token
      */
     @Operation(summary = "刷新 Access Token", description = "使用 Refresh Token 獲取新的 Access Token")
@@ -120,5 +86,24 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<Map<String, Object>> logout(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok(authService.logout(user));
+    }
+
+    /**
+     * 驗證 Email
+     */
+    @Operation(summary = "驗證 Email", description = "使用驗證 token 驗證使用者的電子郵件地址")
+    @GetMapping("/verify-email/{token}")
+    public ResponseEntity<Map<String, Object>> verifyEmail(@PathVariable String token) {
+        return ResponseEntity.ok(authService.verifyEmail(token));
+    }
+
+    /**
+     * 重新發送驗證郵件
+     */
+    @Operation(summary = "重新發送驗證郵件", description = "為指定的 Email 重新發送驗證郵件")
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Map<String, Object>> resendVerificationEmail(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        return ResponseEntity.ok(authService.resendVerificationEmail(email));
     }
 }

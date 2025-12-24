@@ -23,14 +23,12 @@ public class SubscriptionSpecification {
             // 必須是該使用者的訂閱
             predicates.add(criteriaBuilder.equal(root.get("user"), user));
 
-            // 搜尋：名稱或描述包含關鍵字
+            // 搜尋：名稱包含關鍵字
             if (search != null && !search.trim().isEmpty()) {
                 String searchPattern = "%" + search.trim().toLowerCase() + "%";
                 Predicate namePredicate = criteriaBuilder.like(
                         criteriaBuilder.lower(root.get("name")), searchPattern);
-                Predicate descriptionPredicate = criteriaBuilder.like(
-                        criteriaBuilder.lower(root.get("description")), searchPattern);
-                predicates.add(criteriaBuilder.or(namePredicate, descriptionPredicate));
+                predicates.add(namePredicate);
             }
 
             // 篩選狀態

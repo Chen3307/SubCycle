@@ -34,23 +34,35 @@ public class Subscription {
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Column(name = "currency", length = 3)
+    private String currency = "TWD";
+
     @Column(name = "billing_cycle", length = 20)
     private String billingCycle;
 
     @Column(name = "next_payment_date")
     private LocalDate nextPaymentDate;
 
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
+    @Column(name = "end_date")
+    private LocalDate endDate;
+
     @Column(length = 20)
     private String status;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
+    @Column(name = "auto_renew")
+    private Boolean autoRenew = true;
 
-    @Column(name = "logo_url", length = 500)
-    private String logoUrl;
+    @Column(name = "reminder_sent")
+    private Boolean reminderSent = false;
 
-    @Column(name = "website_url", length = 500)
-    private String websiteUrl;
+    @Column(name = "notification_enabled")
+    private Boolean notificationEnabled = true;
+
+    @Column(name = "include_historical_payments")
+    private Boolean includeHistoricalPayments = false;
 
     @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;

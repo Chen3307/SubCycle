@@ -21,14 +21,27 @@ public class SubscriptionRequest {
     private String cycle;
 
     @NotNull(message = "下次付款日期不能為空")
-    @FutureOrPresent(message = "下次付款日期不能是過去日期")
     private LocalDate nextPaymentDate;
+
+    @NotNull(message = "訂閱起始日不能為空")
+    private LocalDate startDate;
 
     private Long categoryId;
 
-    @Pattern(regexp = "^(active|paused|cancelled)?$", message = "狀態必須為 active, paused 或 cancelled")
+    @Pattern(regexp = "^(active|paused|cancelled|expired|completed)?$", message = "狀態必須為 active, paused, cancelled, expired 或 completed")
     private String status;
 
-    @Size(max = 500, message = "描述不能超過 500 個字元")
-    private String description;
+    @Size(max = 3, message = "幣別代碼不能超過 3 個字元")
+    private String currency = "TWD";
+
+    private LocalDate endDate;
+
+    private Boolean autoRenew = true;
+
+    private Boolean reminderSent = false;
+
+    private Boolean notificationEnabled = true;
+
+    private Boolean includeHistoricalPayments = false;
+
 }

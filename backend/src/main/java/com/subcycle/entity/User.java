@@ -36,9 +36,6 @@ public class User implements UserDetails {
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(length = 500)
-    private String avatar;
-
     @Column(length = 3, columnDefinition = "VARCHAR(3) DEFAULT 'TWD'")
     private String currency;
 
@@ -50,6 +47,9 @@ public class User implements UserDetails {
 
     @Column(name = "is_active", columnDefinition = "BOOLEAN DEFAULT TRUE")
     private Boolean isActive;
+
+    @Column(name = "email_verified", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean emailVerified;
 
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
@@ -80,6 +80,9 @@ public class User implements UserDetails {
         }
         if (role == null) {
             role = "USER";
+        }
+        if (emailVerified == null) {
+            emailVerified = false;
         }
     }
 

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
+@SuppressWarnings("null")
 public class UserService {
 
     @Autowired
@@ -27,9 +28,6 @@ public class UserService {
     public UserResponse updateProfile(User user, UpdateProfileRequest request) {
         if (request.getName() != null) {
             user.setName(request.getName());
-        }
-        if (request.getAvatar() != null) {
-            user.setAvatar(request.getAvatar());
         }
         if (request.getCurrency() != null) {
             user.setCurrency(request.getCurrency());
@@ -66,10 +64,12 @@ public class UserService {
                 user.getId(),
                 user.getEmail(),
                 user.getName(),
-                user.getAvatar(),
                 user.getCurrency(),
                 user.getNotificationDays(),
                 user.getRole(),
+                user.getIsActive(),
+                user.getEmailVerified(),
+                user.getLastLoginAt(),
                 user.getCreatedAt()
         );
     }

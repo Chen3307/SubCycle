@@ -10,7 +10,7 @@
     <el-row :gutter="20">
       <el-col :span="16">
         <el-card>
-          <el-table :data="categories" stripe style="width: 100%">
+          <el-table :data="sortedCategories" stripe style="width: 100%">
             <el-table-column prop="name" label="類別名稱" width="200" />
             <el-table-column label="顏色" width="80">
               <template #default="{ row }">
@@ -19,7 +19,7 @@
                 </div>
               </template>
             </el-table-column>
-            <el-table-column label="月均支出" width="150">
+            <el-table-column label="本月支出" width="150">
               <template #default="{ row }">
                 <span class="amount">NT$ {{ getCategoryAmount(row.id).toFixed(0) }}</span>
               </template>
@@ -31,7 +31,7 @@
             </el-table-column>
             <el-table-column label="操作" width="180">
               <template #default="{ row }">
-                <el-button size="small" type="primary" :icon="Edit" @click="openEditDialog(row)">
+                <el-button size="small" class="btn-edit-category" :icon="Edit" @click="openEditDialog(row)">
                   編輯
                 </el-button>
                 <el-button
@@ -123,8 +123,27 @@ import { Plus, Edit, Delete } from '@element-plus/icons-vue'
 const categoryStore = useCategoryStore()
 const subscriptionStore = useSubscriptionStore()
 
-const categories = computed(() => categoryStore.categories)
 const subscriptions = computed(() => subscriptionStore.subscriptions)
+const categories = computed(() => categoryStore.categories)
+const subscriptionCounts = computed(() => {
+  const counts = {}
+  subscriptions.value.forEach(sub => {
+    if (!sub.categoryId) return
+    counts[sub.categoryId] = (counts[sub.categoryId] || 0) + 1
+  })
+  return counts
+})
+const sortedCategories = computed(() => {
+  return [...categories.value].sort((a, b) => {
+    const usedA = (subscriptionCounts.value[a.id] || 0) > 0
+    const usedB = (subscriptionCounts.value[b.id] || 0) > 0
+    if (usedA !== usedB) return usedA ? -1 : 1
+    const orderA = a.sortOrder ?? 0
+    const orderB = b.sortOrder ?? 0
+    if (orderA !== orderB) return orderA - orderB
+    return (a.id ?? 0) - (b.id ?? 0)
+  })
+})
 
 const dialogVisible = ref(false)
 const dialogMode = ref('add')
@@ -174,7 +193,7 @@ const getCategoryAmount = (categoryId) => {
 }
 
 const getCategorySubscriptionCount = (categoryId) => {
-  return subscriptions.value.filter(sub => sub.categoryId === categoryId).length
+  return subscriptionCounts.value[categoryId] || 0
 }
 
 const openAddDialog = () => {
@@ -207,17 +226,21 @@ const resetForm = () => {
 const handleSubmit = async () => {
   if (!formRef.value) return
 
-  await formRef.value.validate((valid) => {
+  await formRef.value.validate(async (valid) => {
     if (valid) {
-      if (dialogMode.value === 'add') {
-        categoryStore.addCategory({ ...form })
-        ElMessage.success('新增成功！')
-      } else {
-        categoryStore.updateCategory(currentEditId.value, { ...form })
-        ElMessage.success('更新成功！')
+      try {
+        if (dialogMode.value === 'add') {
+          await categoryStore.addCategory({ ...form })
+          ElMessage.success('新增成功！')
+        } else {
+          await categoryStore.updateCategory(currentEditId.value, { ...form })
+          ElMessage.success('更新成功！')
+        }
+        dialogVisible.value = false
+        resetForm()
+      } catch (error) {
+        ElMessage.error(error.message || '操作失敗')
       }
-      dialogVisible.value = false
-      resetForm()
     }
   })
 }
@@ -240,10 +263,12 @@ const handleDelete = async (category) => {
       }
     )
 
-    categoryStore.deleteCategory(category.id)
+    await categoryStore.deleteCategory(category.id)
     ElMessage.success('刪除成功！')
-  } catch {
-    // 用戶取消刪除
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.message || '刪除失敗')
+    }
   }
 }
 </script>
@@ -282,7 +307,7 @@ const handleDelete = async (category) => {
   transition: border-color 0.3s ease;
 }
 
-html.dark .color-box {
+:global(.dark-theme) .color-box {
   border-color: var(--border-color);
 }
 
@@ -292,7 +317,7 @@ html.dark .color-box {
   transition: color 0.3s ease;
 }
 
-html.dark .amount {
+:global(.dark-theme) .amount {
   color: var(--accent-mint);
 }
 
@@ -313,7 +338,7 @@ html.dark .amount {
   border-bottom: none;
 }
 
-html.dark .stat-item {
+:global(.dark-theme) .stat-item {
   border-bottom-color: var(--border-color);
 }
 
@@ -372,17 +397,30 @@ html.dark .stat-item {
   border-color: #4169E1;
 }
 
+:deep(.btn-edit-category.el-button) {
+  background-color: #5b8def;
+  border-color: #5b8def;
+  color: #fff;
+}
+
+:deep(.btn-edit-category.el-button:hover),
+:deep(.btn-edit-category.el-button:focus) {
+  background-color: #4b7fdf;
+  border-color: #4b7fdf;
+  color: #fff;
+}
+
 /* 暗色模式下的颜色选择框 */
-html.dark .preset-color-box {
+:global(.dark-theme) .preset-color-box {
   border-color: var(--border-color);
 }
 
-html.dark .preset-color-box:hover {
+:global(.dark-theme) .preset-color-box:hover {
   box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
   border-color: var(--text-tertiary);
 }
 
-html.dark .preset-color-box.active {
+:global(.dark-theme) .preset-color-box.active {
   border-color: #e5e5e5;
   box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px #e5e5e5;
 }

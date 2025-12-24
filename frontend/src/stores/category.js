@@ -4,6 +4,14 @@ import { useSubscriptionStore } from './subscription'
 import { categoryAPI } from '../api/index'
 
 export const useCategoryStore = defineStore('category', () => {
+  const defaultCategories = [
+    { id: 1, name: '影音娛樂', color: '#EF4444', icon: 'play-circle', sortOrder: 1 },
+    { id: 2, name: '工作生產力', color: '#3B82F6', icon: 'briefcase', sortOrder: 2 },
+    { id: 3, name: '生活與購物', color: '#10B981', icon: 'shopping-cart', sortOrder: 3 },
+    { id: 4, name: '遊戲與社群', color: '#8B5CF6', icon: 'gamepad', sortOrder: 4 },
+    { id: 5, name: '電信水費', color: '#F59E0B', icon: 'bolt', sortOrder: 5 }
+  ]
+
   const categories = ref([])
   const loading = ref(false)
   const error = ref(null)
@@ -12,9 +20,13 @@ export const useCategoryStore = defineStore('category', () => {
     try {
       loading.value = true
       const { data } = await categoryAPI.getAll()
-      categories.value = data
+      categories.value = Array.isArray(data) && data.length
+        ? data
+        : [...defaultCategories]
       error.value = null
     } catch (err) {
+      // 若後端沒有資料，至少提供預設類別避免使用者需手動新增
+      categories.value = [...defaultCategories]
       error.value = err.response?.data?.message || '無法取得類別資料'
       throw err
     } finally {
@@ -35,6 +47,7 @@ export const useCategoryStore = defineStore('category', () => {
       }
     })
 
+    // 使用月均支出估算各類別分佈
     subscriptionStore.subscriptions.forEach(sub => {
       if (distribution[sub.categoryId]) {
         let monthlyAmount = sub.amount
@@ -64,21 +77,37 @@ export const useCategoryStore = defineStore('category', () => {
   }
 
   // 更新類別
-  const updateCategory = (id, updatedData) => {
-    const index = categories.value.findIndex(c => c.id === id)
-    if (index !== -1) {
-      categories.value[index] = {
-        ...categories.value[index],
-        ...updatedData
+  const updateCategory = async (id, updatedData) => {
+    try {
+      const payload = {
+        name: updatedData.name,
+        color: updatedData.color,
+        icon: updatedData.icon,
+        sortOrder: updatedData.sortOrder
       }
+      const { data } = await categoryAPI.update(id, payload)
+      const index = categories.value.findIndex(c => c.id === id)
+      if (index !== -1) {
+        categories.value[index] = data
+      }
+      return data
+    } catch (err) {
+      error.value = err.response?.data?.message || '更新類別失敗'
+      throw err
     }
   }
 
   // 刪除類別
-  const deleteCategory = (id) => {
-    const index = categories.value.findIndex(c => c.id === id)
-    if (index !== -1) {
-      categories.value.splice(index, 1)
+  const deleteCategory = async (id) => {
+    try {
+      await categoryAPI.remove(id)
+      const index = categories.value.findIndex(c => c.id === id)
+      if (index !== -1) {
+        categories.value.splice(index, 1)
+      }
+    } catch (err) {
+      error.value = err.response?.data?.message || '刪除類別失敗'
+      throw err
     }
   }
 
@@ -92,22 +121,6 @@ export const useCategoryStore = defineStore('category', () => {
     error.value = null
   }
 
-  // 載入模擬數據（用於前端預覽）
-  const loadMockData = () => {
-    categories.value = [
-      { id: 1, name: '串流影音', color: '#EF4444', icon: 'play-circle' },
-      { id: 2, name: '音樂', color: '#F59E0B', icon: 'music' },
-      { id: 3, name: '雲端儲存', color: '#10B981', icon: 'cloud' },
-      { id: 4, name: '生產力工具', color: '#3B82F6', icon: 'briefcase' },
-      { id: 5, name: '遊戲娛樂', color: '#8B5CF6', icon: 'gamepad' },
-      { id: 6, name: '健康運動', color: '#EC4899', icon: 'heart' },
-      { id: 7, name: '新聞雜誌', color: '#6366F1', icon: 'newspaper' },
-      { id: 8, name: '學習教育', color: '#14B8A6', icon: 'book' },
-      { id: 9, name: '設計開發', color: '#F97316', icon: 'code' },
-      { id: 10, name: '生活購物', color: '#84CC16', icon: 'shopping-cart' }
-    ]
-  }
-
   return {
     categories,
     loading,
@@ -118,7 +131,6 @@ export const useCategoryStore = defineStore('category', () => {
     updateCategory,
     deleteCategory,
     getCategoryById,
-    clear,
-    loadMockData
+    clear
   }
 })

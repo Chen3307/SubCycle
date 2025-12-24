@@ -29,10 +29,12 @@ SubCycle/
 
 ## 快速開始
 
-### 前置需求
+### 方法一：手動安裝
+
+#### 前置需求
 
 - **Node.js 18+** （前端）
-- **Java 17+** （後端）
+- **Java 21+** （後端）
 - **Maven 3.6+** （後端）
 - **MySQL 8.0+** （資料庫）
 
@@ -97,6 +99,12 @@ npm run dev
 
 - **Spring Boot 3.2** - Java 框架
 - **Spring Data JPA** - ORM 資料持久化
+- **Spring Security** - 安全認證
+- **JWT** - Token 認證
+- **Spring Mail** - 郵件發送
+- **iText 7** - PDF 生成
+- **Apache POI** - Excel 生成
+- **Bucket4j** - API 限流
 - **MySQL** - 關聯式資料庫
 - **Maven** - 專案管理工具
 
@@ -113,7 +121,8 @@ npm run dev
 ### 1. 會員系統
 
 - 使用者註冊 / 登入
-- JWT 認證（規劃中）
+- JWT + Refresh Token 認證
+- 密碼加密 (BCrypt)
 - 個人資料管理
 
 ### 2. 儀表板
@@ -143,34 +152,26 @@ npm run dev
 - 類別顏色設定
 - 統計資料查看
 
----
+### 6. Email 通知系統
 
-## 測試連線
+- 訂閱續訂提醒
+- 付款成功通知
+- 歡迎郵件
+- 精美的 HTML 模板
 
-### 測試後端 API
+### 7. 數據導出
 
-1. **基本測試**
+- 導出訂閱列表 (PDF/Excel)
+- 導出付款歷史 (PDF/Excel)
+- 包含統計數據和總計
+- 支持自定義日期範圍
 
-   ```
-   http://localhost:8080/api/test
-   ```
+### 8. API 安全
 
-2. **資料庫連線測試**
-
-   ```
-   http://localhost:8080/api/test/db
-   ```
-
-3. **查詢使用者**
-   ```
-   http://localhost:8080/api/test/users
-   ```
-
-### 測試資料
-
-- **Email**: `demo@subcycle.com`
-- **密碼**: `password123`
-- **預設訂閱**: Netflix, Spotify, Google One
+- Rate Limiting (請求限流)
+- 每分鐘 100 請求限制
+- 基於用戶/IP 的限流
+- 防止 API 濫用
 
 ---
 
@@ -179,6 +180,8 @@ npm run dev
 - [前端文件](./frontend/README.md) - Vue.js 應用程式說明
 - [後端文件](./backend/README.md) - Spring Boot API 說明
 - [資料庫文件](./database/README.md) - MySQL 資料庫架構
+- [JWT 認證指南](./JWT_AUTHENTICATION_GUIDE.md) - JWT 認證實作說明
+- [第四優先功能說明](./FEATURES_TIER4.md) - Email、導出、限流
 
 ---
 
@@ -213,15 +216,20 @@ mysqldump -u root -p subcycle > backup.sql
 
 ---
 
+## 已完成功能 ✅
+
+- [x] JWT 認證整合
+- [x] 密碼加密 (BCrypt)
+- [x] 郵件提醒功能
+- [x] 匯出報表 (PDF/Excel)
+- [x] API Rate Limiting
+
 ## 開發中功能
 
-- [ ] JWT 認證整合
-- [ ] 密碼加密 (bcrypt)
-- [ ] 郵件提醒功能
 - [ ] 多幣別支援
-- [ ] 匯出報表 (PDF/Excel)
 - [ ] 手機版響應式優化
-- [ ] Docker 容器化部署
+- [ ] 自動續訂提醒排程
+- [ ] 數據分析儀表板增強
 
 ---
 
@@ -247,4 +255,31 @@ MIT
 
 ---
 
-**最後更新：2025-11-27**
+## API 端點
+
+### 認證相關
+
+- `POST /api/auth/register` - 用戶註冊
+- `POST /api/auth/login` - 用戶登入
+
+### 訂閱管理
+
+- `GET /api/subscriptions` - 獲取訂閱列表
+- `POST /api/subscriptions` - 創建訂閱
+- `PUT /api/subscriptions/{id}` - 更新訂閱
+- `DELETE /api/subscriptions/{id}` - 刪除訂閱
+
+### 數據導出
+
+- `GET /api/export/subscriptions/pdf` - 導出訂閱 PDF
+- `GET /api/export/subscriptions/excel` - 導出訂閱 Excel
+- `GET /api/export/payments/pdf` - 導出付款歷史 PDF
+- `GET /api/export/payments/excel` - 導出付款歷史 Excel
+
+完整 API 文檔請訪問：http://localhost:8080/swagger-ui.html
+
+---
+
+**最後更新：2024-12-14**
+- `POST /api/auth/refresh` - 刷新 Token
+- `POST /api/auth/logout` - 用戶登出

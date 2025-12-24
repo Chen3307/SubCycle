@@ -28,9 +28,9 @@
         </div>
       </div>
       <div class="hero-image-container">
-        <img 
-          src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" 
-          alt="Financial Dashboard" 
+        <img
+          src="/hero.jpg"
+          alt="Financial Dashboard"
           class="hero-image"
         />
       </div>
@@ -40,17 +40,23 @@
       <h2 class="section-title">為什麼選擇 Subcycle？</h2>
       <div class="features-grid">
         <div class="feature-card">
-          <div class="feature-icon">📊</div>
+          <div class="feature-icon">
+            <ChartIcon />
+          </div>
           <h3>視覺化儀表板</h3>
           <p>一目了然地查看您的每月支出和訂閱分佈。</p>
         </div>
         <div class="feature-card">
-          <div class="feature-icon">🔔</div>
+          <div class="feature-icon">
+            <BellIconFeature />
+          </div>
           <h3>付款提醒</h3>
           <p>在付款日前收到通知，避免意外扣款。</p>
         </div>
         <div class="feature-card">
-          <div class="feature-icon">💰</div>
+          <div class="feature-icon">
+            <MoneyIcon />
+          </div>
           <h3>支出分析</h3>
           <p>深入了解您的消費習慣，找出省錢的機會。</p>
         </div>
@@ -58,7 +64,7 @@
     </section>
 
     <footer class="landing-footer">
-      <p>&copy; 2025 訂閱追蹤器 Subcycle. All rights reserved.</p>
+      <p>&copy; 2025 訂閱追蹤器 Subcycle</p>
     </footer>
   </div>
 </template>
@@ -66,6 +72,9 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
+import ChartIcon from '../components/icons/ChartIcon.vue'
+import BellIconFeature from '../components/icons/BellIconFeature.vue'
+import MoneyIcon from '../components/icons/MoneyIcon.vue'
 
 const authStore = useAuthStore()
 const isLoggedIn = computed(() => !!authStore.token)
@@ -265,8 +274,10 @@ onMounted(() => {
 }
 
 .feature-icon {
-  font-size: 48px;
   margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .feature-card h3 {

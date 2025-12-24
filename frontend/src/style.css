@@ -6,10 +6,11 @@
 
 /* 定義 CSS 變量 - 淺色模式 */
 :root {
-  --accent-mint: #8deac3;
+  --accent-mint: #70d5b4;
   --accent-blue: #5b8def;
   --accent-charcoal: #1f2a33;
   --soft-white: #f7fbff;
+  color-scheme: light;
 
   --bg-primary: #f7fbff;
   --bg-secondary: #eef6f2;
@@ -26,6 +27,12 @@
 
   --card-bg: #ffffff;
   --hover-bg: #e4f5ef;
+  --surface-overlay: #ffffff;
+  --shadow-soft: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --shadow-elevated: 0 12px 32px rgba(15, 23, 42, 0.18);
+  --focus-ring: rgba(91, 141, 239, 0.35);
+  --scrollbar-thumb: #c8d6d0;
+  --scrollbar-thumb-hover: #b6c7c0;
 
   --primary-color: var(--accent-blue);
   --success-color: #70d5b4;
@@ -37,7 +44,8 @@
 }
 
 /* 深色模式變量 */
-html.dark {
+.dark-theme {
+  color-scheme: dark;
   --bg-primary: #111820;
   --bg-secondary: #16222b;
   --bg-sidebar: #0d141b;
@@ -53,278 +61,456 @@ html.dark {
 
   --card-bg: #121b23;
   --hover-bg: #1c2a35;
+  --surface-overlay: #111a22;
+  --shadow-soft: 0 10px 26px rgba(0, 0, 0, 0.35);
+  --shadow-elevated: 0 14px 36px rgba(0, 0, 0, 0.5);
+  --focus-ring: rgba(112, 213, 180, 0.35);
+  --scrollbar-thumb: #2a3a45;
+  --scrollbar-thumb-hover: #354a58;
 
   --primary-color: var(--accent-blue);
-  --success-color: #7fdcb7;
+  --success-color: #70d5b4;
   --warning-color: #f0c572;
   --danger-color: #f56c6c;
 
   --logo-color: var(--accent-mint);
   --menu-active-text: var(--accent-mint);
+
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  --el-table-bg-color: var(--card-bg);
+  --el-table-tr-bg-color: var(--card-bg);
+  --el-table-header-bg-color: var(--bg-secondary);
+  --el-table-row-hover-bg-color: var(--hover-bg);
+  --el-table-row-striped-bg-color: var(--bg-secondary);
+  --el-table-border-color: var(--border-color);
+  --el-table-text-color: var(--text-primary);
 }
 
 /* 深色模式下的 Element Plus 組件樣式 */
-html.dark .el-card {
+.dark-theme .el-card {
   background-color: var(--card-bg);
   border-color: var(--border-color);
   color: var(--text-primary);
+  box-shadow: var(--shadow-soft);
 }
 
-html.dark .el-table {
+.dark-theme .el-table {
   background-color: var(--card-bg);
   color: var(--text-primary);
 }
 
-html.dark .el-table th,
-html.dark .el-table tr {
+.dark-theme .el-table th,
+.dark-theme .el-table tr {
   background-color: var(--card-bg);
   color: var(--text-primary);
 }
 
-html.dark .el-table--striped .el-table__body tr.el-table__row--striped td {
+.dark-theme .el-table--striped .el-table__body tr.el-table__row--striped td {
   background-color: var(--bg-secondary);
 }
 
-html.dark .el-input__wrapper {
+.dark-theme .el-input__wrapper {
   background-color: var(--bg-secondary);
   box-shadow: 0 0 0 1px var(--border-color) inset;
 }
 
-html.dark .el-input__wrapper:hover {
+.dark-theme .el-input__wrapper:hover {
   box-shadow: 0 0 0 1px var(--border-light) inset;
 }
 
-html.dark .el-input__inner {
+.dark-theme .el-input__wrapper.is-focus,
+.dark-theme .el-input__wrapper:focus-within {
+  box-shadow: 0 0 0 1px var(--primary-color) inset, 0 0 0 3px var(--focus-ring);
+}
+
+.dark-theme .el-input__inner {
   color: var(--text-primary);
 }
 
-html.dark .el-select-dropdown {
+.dark-theme .el-select-dropdown {
   background-color: var(--card-bg);
   border-color: var(--border-color);
 }
 
-html.dark .el-select-dropdown__item {
+.dark-theme .el-select-dropdown__item {
   color: var(--text-primary);
 }
 
-html.dark .el-select-dropdown__item:hover {
+.dark-theme .el-select-dropdown__item:hover {
   background-color: var(--hover-bg);
 }
 
-html.dark .el-dialog {
-  background-color: var(--card-bg);
-  border-color: var(--border-color);
-}
-
-html.dark .el-dialog__header {
+.dark-theme .el-select-dropdown__item.is-selected {
+  background-color: var(--hover-bg);
   color: var(--text-primary);
 }
 
-html.dark .el-dialog__body {
+.dark-theme .el-select-dropdown__item.selected,
+.dark-theme .el-select-dropdown__item.is-hovering {
+  background-color: var(--hover-bg);
+  color: var(--text-primary);
+}
+
+.dark-theme .el-dialog {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-elevated);
+}
+
+.dark-theme .el-dialog__header {
+  color: var(--text-primary);
+}
+
+.dark-theme .el-dialog__title {
+  color: var(--text-primary);
+}
+
+.dark-theme .el-dialog__body {
   color: var(--text-secondary);
 }
 
-html.dark .el-form-item__label {
+.dark-theme .el-form-item__label {
   color: var(--text-primary);
 }
 
-html.dark .el-menu-item:hover {
+.dark-theme .el-menu-item:hover {
   background-color: var(--hover-bg) !important;
 }
 
-html.dark .el-popover {
+.dark-theme .el-popover {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-soft);
+}
+
+.dark-theme .el-textarea__inner {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.dark-theme .el-textarea__inner:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.dark-theme .el-date-editor {
+  background-color: var(--bg-secondary);
+}
+
+.dark-theme .el-date-editor .el-input__inner {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.dark-theme .el-picker-panel {
   background-color: var(--card-bg);
   border-color: var(--border-color);
   color: var(--text-primary);
 }
 
-html.dark .el-textarea__inner {
+.dark-theme .el-date-picker__header-label,
+.dark-theme .el-date-table th,
+.dark-theme .el-date-table td {
+  color: var(--text-primary);
+}
+
+.dark-theme .el-picker-panel__icon-btn,
+.dark-theme .el-picker-panel__icon-btn .el-icon,
+.dark-theme .el-picker-panel__icon-btn .el-icon svg {
+  color: #ffffff;
+  fill: currentColor;
+}
+
+.dark-theme .el-input-number {
+  background-color: var(--bg-secondary);
+  --el-border-color: var(--border-color);
+  --el-border-color-light: var(--border-light);
+}
+
+.dark-theme .el-input-number .el-input__wrapper {
+  box-shadow: 0 0 0 1px var(--border-color) inset;
+  background-color: transparent;
+}
+
+.dark-theme .el-input-number .el-input__wrapper.is-focus,
+.dark-theme .el-input-number .el-input__wrapper:focus-within,
+.dark-theme .el-input-number .el-input__wrapper:hover {
+  box-shadow: 0 0 0 1px var(--border-color) inset;
+}
+
+.dark-theme .el-input-number .el-input__inner {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
+}
+
+.dark-theme .el-color-picker__trigger {
   border-color: var(--border-color);
 }
 
-html.dark .el-date-editor {
-  background-color: var(--bg-secondary);
-}
-
-html.dark .el-date-editor .el-input__inner {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-html.dark .el-picker-panel {
-  background-color: var(--card-bg);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
-
-html.dark .el-date-picker__header-label,
-html.dark .el-date-table th,
-html.dark .el-date-table td {
-  color: var(--text-primary);
-}
-
-html.dark .el-input-number {
-  background-color: var(--bg-secondary);
-}
-
-html.dark .el-input-number .el-input__inner {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-html.dark .el-color-picker__trigger {
-  border-color: var(--border-color);
-}
-
-html.dark .el-switch__core {
+.dark-theme .el-switch__core {
   border-color: var(--border-color);
   background-color: var(--bg-secondary);
 }
 
-html.dark .el-switch.is-checked .el-switch__core {
+.dark-theme .el-switch.is-checked .el-switch__core {
   background-color: var(--primary-color);
 }
 
-html.dark .el-button--default {
+.dark-theme .el-button--default {
   background-color: var(--bg-secondary);
   border-color: var(--border-color);
   color: var(--text-primary);
 }
 
-html.dark .el-button--default:hover {
+.dark-theme .el-button--default:hover {
   background-color: var(--hover-bg);
   border-color: var(--border-light);
 }
 
-html.dark .el-text {
+.dark-theme .el-button--default .el-icon,
+.dark-theme .el-button--default .el-icon svg {
+  color: var(--text-primary);
+}
+
+.dark-theme .el-text {
   color: var(--text-tertiary);
 }
 
-html.dark .el-input.is-disabled .el-input__wrapper {
+.dark-theme .el-input.is-disabled .el-input__wrapper {
   background-color: #1a1a1a;
   box-shadow: 0 0 0 1px var(--border-color) inset;
 }
 
-html.dark .el-input.is-disabled .el-input__inner {
+.dark-theme .el-input.is-disabled .el-input__inner {
   color: var(--text-tertiary);
 }
 
-html.dark .el-empty__description {
+.dark-theme .el-empty__description {
   color: var(--text-tertiary);
 }
 
-html.dark .el-message-box {
+.dark-theme .el-message-box {
   background-color: var(--card-bg);
   border-color: var(--border-color);
+  box-shadow: var(--shadow-elevated);
 }
 
-html.dark .el-message-box__title,
-html.dark .el-message-box__message {
+.dark-theme .el-message-box__title,
+.dark-theme .el-message-box__message {
   color: var(--text-primary);
 }
 
-html.dark .el-overlay {
+.dark-theme .el-overlay {
   background-color: rgba(0, 0, 0, 0.7);
 }
 
-html.dark .el-color-dropdown {
+.dark-theme .el-color-dropdown {
   background-color: var(--card-bg);
   border-color: var(--border-color);
+  box-shadow: var(--shadow-soft);
 }
 
-html.dark .el-popper {
+.dark-theme .el-popper {
   background-color: var(--card-bg);
   border-color: var(--border-color);
   color: var(--text-primary);
+  box-shadow: var(--shadow-soft);
 }
 
-html.dark .el-date-table td.available:hover {
+.dark-theme .el-date-table td.available:hover {
   color: var(--primary-color);
 }
 
-html.dark .el-date-table td.today span {
+.dark-theme .el-date-table td.today span {
   color: var(--primary-color);
   font-weight: bold;
 }
 
-html.dark .el-date-table td.current:not(.disabled) span {
+.dark-theme .el-date-table td.current:not(.disabled) span {
   background-color: var(--primary-color);
   color: white;
 }
 
-html.dark .el-picker__popper {
+.dark-theme .el-picker__popper {
   background-color: var(--card-bg);
   border-color: var(--border-color);
 }
 
-html.dark .el-picker-panel__body {
+.dark-theme .el-picker-panel__body {
   color: var(--text-primary);
 }
 
-html.dark .el-picker-panel__footer {
+.dark-theme .el-picker-panel__footer {
   background-color: var(--bg-secondary);
   border-color: var(--border-color);
 }
 
-html.dark .el-input-number__decrease,
-html.dark .el-input-number__increase {
+.dark-theme .el-input-number__decrease,
+.dark-theme .el-input-number__increase {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
+  border-color: var(--border-color) !important;
+  box-shadow: none;
+  outline: none;
+}
+
+.dark-theme .el-input-number__increase {
+  border-left-color: var(--border-color) !important;
+  border-top-color: var(--border-color) !important;
+}
+
+.dark-theme .el-input-number__decrease {
+  border-right-color: var(--border-color) !important;
+  border-top-color: var(--border-color) !important;
+}
+
+.dark-theme .el-input-number__decrease::after,
+.dark-theme .el-input-number__increase::after {
   border-color: var(--border-color);
 }
 
-html.dark .el-input-number__decrease:hover,
-html.dark .el-input-number__increase:hover {
+.dark-theme .el-input-number__decrease::before,
+.dark-theme .el-input-number__increase::before {
+  border-color: var(--border-color);
+}
+
+.dark-theme .el-input-number__increase {
+  border-top-color: var(--border-color);
+}
+
+.dark-theme .el-input-number__decrease:hover,
+.dark-theme .el-input-number__increase:hover {
   color: var(--primary-color);
 }
 
-html.dark .el-select__popper {
+.dark-theme .el-select__popper {
   background-color: var(--card-bg);
   border-color: var(--border-color);
 }
 
-html.dark .el-select__wrapper {
+.dark-theme .el-select__wrapper {
   background-color: var(--bg-secondary);
   box-shadow: 0 0 0 1px var(--border-color) inset;
 }
 
-html.dark .el-select__wrapper:hover {
+.dark-theme .el-select__wrapper.is-focus,
+.dark-theme .el-select__wrapper:focus-within {
+  box-shadow: 0 0 0 1px var(--primary-color) inset, 0 0 0 3px var(--focus-ring);
+}
+
+.dark-theme .el-select__wrapper:hover {
   box-shadow: 0 0 0 1px var(--border-light) inset;
 }
 
-html.dark .el-select__selected-item {
+.dark-theme .el-select__selected-item {
   color: var(--text-primary);
 }
 
-html.dark .el-select__placeholder {
+.dark-theme .el-select__placeholder {
   color: var(--text-tertiary);
 }
 
-html.dark .el-tag {
+.dark-theme .el-tag {
   background-color: var(--bg-secondary);
   border-color: var(--border-color);
   color: var(--text-primary);
 }
 
-html.dark .el-menu {
+.dark-theme .el-tag.el-tag--success {
+  background-color: rgba(112, 213, 180, 0.2);
+  border-color: rgba(112, 213, 180, 0.4);
+  color: #9fe8cf;
+}
+
+.dark-theme .el-tag.el-tag--warning {
+  background-color: rgba(240, 197, 114, 0.18);
+  border-color: rgba(240, 197, 114, 0.4);
+  color: #f4d29a;
+}
+
+.dark-theme .el-tag.el-tag--danger {
+  background-color: rgba(245, 108, 108, 0.2);
+  border-color: rgba(245, 108, 108, 0.45);
+  color: #f5a1a1;
+}
+
+.dark-theme .el-tag.el-tag--info {
+  background-color: rgba(142, 159, 176, 0.2);
+  border-color: rgba(142, 159, 176, 0.4);
+  color: #c0cbd5;
+}
+
+.dark-theme .el-divider__text,
+.dark-theme .el-divider {
+  color: var(--text-tertiary);
+  border-color: var(--border-color);
+}
+
+.dark-theme .el-menu {
   background-color: var(--card-bg);
   border-color: var(--border-color);
 }
 
-html.dark .el-menu-item {
+.dark-theme .el-menu-item {
   background-color: var(--card-bg);
   color: var(--text-primary);
 }
 
-html.dark .el-menu-item.is-active {
+.dark-theme .el-menu-item.is-active {
   background-color: var(--hover-bg);
   color: var(--primary-color);
 }
 
-html.dark .el-menu-item:not(.is-disabled):hover {
+.dark-theme .el-menu-item:not(.is-disabled):hover {
   background-color: var(--hover-bg);
+}
+
+.dark-theme .el-dropdown-menu {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-soft);
+}
+
+.dark-theme .el-dropdown-menu__item {
+  color: var(--text-primary);
+}
+
+.dark-theme .el-dropdown-menu__item:hover {
+  background-color: var(--hover-bg);
+}
+
+.dark-theme .el-pagination .btn-next,
+.dark-theme .el-pagination .btn-prev,
+.dark-theme .el-pagination .el-pager li {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.dark-theme .el-pagination .el-pager li.is-active {
+  background-color: var(--primary-color);
+  color: #ffffff;
+  border-color: var(--primary-color);
+}
+
+.dark-theme .el-pagination .el-pager li:hover {
+  color: var(--primary-color);
+}
+
+.dark-theme .el-notification,
+.dark-theme .el-message {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-soft);
+}
+
+.dark-theme .el-notification__title,
+.dark-theme .el-message__content {
+  color: var(--text-primary);
 }
 
 body {
@@ -341,6 +527,26 @@ body {
   perspective: 1000px;
 }
 
+.dark-theme ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.dark-theme ::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.dark-theme ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
+.dark-theme ::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
 #app {
   width: 100%;
   height: 100vh;
@@ -349,99 +555,105 @@ body {
 }
 
 /* FullCalendar 暗色模式樣式 */
-html.dark .fc-theme-standard th {
+.dark-theme .fc-theme-standard th {
   background-color: var(--bg-secondary) !important;
   border-color: var(--border-color) !important;
 }
 
-html.dark .fc-col-header-cell {
+.dark-theme .fc-col-header-cell {
   background-color: var(--bg-secondary) !important;
 }
 
-html.dark .fc .fc-col-header-cell-cushion {
+.dark-theme .fc .fc-col-header-cell-cushion {
   color: var(--text-primary) !important;
 }
 
-html.dark .fc .fc-toolbar-title {
+.dark-theme .fc .fc-toolbar-title {
   color: var(--text-primary);
 }
 
-html.dark .fc .fc-daygrid-day-number {
+.dark-theme .fc .fc-daygrid-day-number {
   color: var(--text-primary);
 }
 
-html.dark .fc-theme-standard td,
-html.dark .fc-theme-standard th {
+.dark-theme .fc-theme-standard td,
+.dark-theme .fc-theme-standard th {
   border-color: var(--border-color) !important;
 }
 
-html.dark .fc-scrollgrid {
+.dark-theme .fc-scrollgrid {
   border-color: var(--border-color) !important;
 }
 
 /* 表格操作栏暗色模式优化 */
-html.dark .el-table__header-wrapper th {
+.dark-theme .el-table__header-wrapper th {
   background-color: var(--bg-secondary) !important;
   color: var(--text-primary) !important;
 }
 
-html.dark .el-table__fixed-header-wrapper th {
+.dark-theme .el-table__fixed-header-wrapper th {
   background-color: var(--bg-secondary) !important;
   color: var(--text-primary) !important;
 }
 
-html.dark .el-button--small {
+.dark-theme .el-button--small {
   border-color: transparent;
 }
 
-html.dark .el-button--primary.el-button--small {
+.dark-theme .el-button--primary.el-button--small {
   background-color: var(--primary-color);
   border-color: var(--primary-color);
 }
 
-html.dark .el-button--primary.el-button--small:hover {
+.dark-theme .el-button--primary.el-button--small:hover {
   background-color: #79a4ff;
   border-color: #79a4ff;
 }
 
-html.dark .el-button--danger.el-button--small {
+.dark-theme .el-button--danger.el-button--small {
   background-color: #f56c6c;
   border-color: #f56c6c;
 }
 
-html.dark .el-button--danger.el-button--small:hover {
+.dark-theme .el-button--danger.el-button--small:hover {
   background-color: #f78989;
   border-color: #f78989;
 }
 
 /* 表格行悬停效果 - 使用 GPU 加速 */
-html.dark .el-table__body tr > td {
+.dark-theme .el-table__body tr > td {
   transition: background-color 0.1s ease !important;
   will-change: background-color;
   transform: translateZ(0);
 }
 
-html.dark .el-table__body tr:hover > td.el-table__cell {
+.dark-theme .el-table__body tr:hover > td.el-table__cell {
   background-color: var(--hover-bg) !important;
 }
 
-html.dark .el-table__body tr:hover > td {
+.dark-theme .el-table__body tr:hover > td {
   background-color: var(--hover-bg) !important;
 }
 
-html.dark .el-table__row:hover {
+.dark-theme .el-table__body tr.hover-row > td.el-table__cell,
+.dark-theme .el-table__body tr.hover-row > td {
+  background-color: var(--hover-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+.dark-theme .el-table__row:hover {
   background-color: var(--hover-bg) !important;
 }
 
-html.dark .el-table--striped .el-table__body tr.el-table__row--striped:hover > td {
+.dark-theme .el-table--striped .el-table__body tr.el-table__row--striped:hover > td {
   background-color: var(--hover-bg) !important;
 }
 
-html.dark .el-table--enable-row-hover .el-table__body tr:hover > td {
+.dark-theme .el-table--enable-row-hover .el-table__body tr:hover > td {
   background-color: var(--hover-bg) !important;
 }
 
-html.dark .el-table--striped .el-table__body tr:hover {
+.dark-theme .el-table--striped .el-table__body tr:hover {
   background-color: var(--hover-bg) !important;
 }
 
@@ -453,15 +665,15 @@ html.dark .el-table--striped .el-table__body tr:hover {
 }
 
 /* 覆盖 Element Plus 默认的 hover 颜色 */
-html.dark .el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell {
+.dark-theme .el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell {
   background-color: var(--hover-bg) !important;
 }
 
-html.dark .el-table tbody tr:hover > td {
+.dark-theme .el-table tbody tr:hover > td {
   background-color: var(--hover-bg) !important;
 }
 
-html.dark .el-table tbody tr:hover {
+.dark-theme .el-table tbody tr:hover {
   background-color: var(--hover-bg) !important;
 }
 

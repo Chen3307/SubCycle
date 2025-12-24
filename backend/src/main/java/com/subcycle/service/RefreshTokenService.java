@@ -29,7 +29,6 @@ public class RefreshTokenService {
         // 刪除該用戶舊的 refresh token
         refreshTokenRepository.deleteByUser(user);
 
-        // 創建新的 refresh token
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setUser(user);
         refreshToken.setToken(UUID.randomUUID().toString());

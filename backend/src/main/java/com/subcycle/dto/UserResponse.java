@@ -13,9 +13,11 @@ public class UserResponse {
     private Long id;
     private String email;
     private String name;
-    private String avatar;
     private String currency;
     private Integer notificationDays;
     private String role;
+    private Boolean isActive;
+    private Boolean emailVerified;
+    private LocalDateTime lastLoginAt;
     private LocalDateTime createdAt;
 }

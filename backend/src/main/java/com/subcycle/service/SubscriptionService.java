@@ -1,5 +1,6 @@
 package com.subcycle.service;
 
+import com.subcycle.dto.CategoryResponse;
 import com.subcycle.dto.SubscriptionRequest;
 import com.subcycle.dto.SubscriptionResponse;
 import com.subcycle.entity.Category;
@@ -24,6 +25,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@SuppressWarnings("null")
 public class SubscriptionService {
 
     @Autowired
@@ -32,7 +34,16 @@ public class SubscriptionService {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Autowired
+    private SubscriptionScheduleService scheduleService;
+
     public List<SubscriptionResponse> getSubscriptions(User user) {
+        // 自動推進過期的訂閱日期
+        int updated = scheduleService.rollOverExpiredForUser(user);
+        if (updated > 0) {
+            System.out.println("自動推進了 " + updated + " 個過期訂閱 (用戶: " + user.getId() + ")");
+        }
+
         return subscriptionRepository.findByUserOrderByNextPaymentDateAsc(user)
                 .stream()
                 .map(this::toResponse)
@@ -93,13 +104,44 @@ public class SubscriptionService {
         subscriptionRepository.delete(subscription);
     }
 
+    public int updateNotificationEnabled(User user, boolean enabled) {
+        List<Subscription> subscriptions = subscriptionRepository.findByUser(user);
+        if (subscriptions.isEmpty()) {
+            return 0;
+        }
+
+        int updated = 0;
+        for (Subscription subscription : subscriptions) {
+            Boolean current = subscription.getNotificationEnabled();
+            if (current == null || current != enabled) {
+                subscription.setNotificationEnabled(enabled);
+                if (enabled) {
+                    subscription.setReminderSent(false);
+                }
+                updated++;
+            }
+        }
+
+        if (updated > 0) {
+            subscriptionRepository.saveAll(subscriptions);
+        }
+
+        return updated;
+    }
+
     private void applyRequest(Subscription subscription, User user, SubscriptionRequest request) {
         subscription.setName(request.getName());
         subscription.setPrice(Optional.ofNullable(request.getAmount()).orElse(BigDecimal.ZERO));
+        subscription.setCurrency(Optional.ofNullable(request.getCurrency()).orElse("TWD"));
         subscription.setBillingCycle(Optional.ofNullable(request.getCycle()).orElse("monthly"));
         subscription.setNextPaymentDate(request.getNextPaymentDate());
+        subscription.setStartDate(Optional.ofNullable(request.getStartDate()).orElse(request.getNextPaymentDate()));
+        subscription.setEndDate(request.getEndDate());
         subscription.setStatus(Optional.ofNullable(request.getStatus()).orElse("active"));
-        subscription.setDescription(request.getDescription());
+        subscription.setAutoRenew(Optional.ofNullable(request.getAutoRenew()).orElse(true));
+        subscription.setReminderSent(Optional.ofNullable(request.getReminderSent()).orElse(false));
+        subscription.setNotificationEnabled(Optional.ofNullable(request.getNotificationEnabled()).orElse(true));
+        subscription.setIncludeHistoricalPayments(Optional.ofNullable(request.getIncludeHistoricalPayments()).orElse(false));
 
         if (request.getCategoryId() != null) {
             Category category = categoryRepository.findByIdAndUser(request.getCategoryId(), user)
@@ -111,15 +153,32 @@ public class SubscriptionService {
     }
 
     private SubscriptionResponse toResponse(Subscription subscription) {
-        return new SubscriptionResponse(
-                subscription.getId(),
-                subscription.getName(),
-                subscription.getPrice(),
-                subscription.getBillingCycle(),
-                subscription.getNextPaymentDate(),
-                subscription.getCategory() != null ? subscription.getCategory().getId() : null,
-                subscription.getStatus(),
-                subscription.getDescription()
-        );
+        SubscriptionResponse response = new SubscriptionResponse();
+        response.setId(subscription.getId());
+        response.setName(subscription.getName());
+        response.setPrice(subscription.getPrice());
+        response.setCurrency(subscription.getCurrency());
+        response.setBillingCycle(subscription.getBillingCycle());
+        response.setNextPaymentDate(subscription.getNextPaymentDate());
+        response.setStartDate(subscription.getStartDate());
+        response.setEndDate(subscription.getEndDate());
+        response.setStatus(subscription.getStatus());
+        response.setAutoRenew(subscription.getAutoRenew());
+        response.setReminderSent(subscription.getReminderSent());
+        response.setNotificationEnabled(subscription.getNotificationEnabled());
+        response.setIncludeHistoricalPayments(subscription.getIncludeHistoricalPayments());
+
+        if (subscription.getCategory() != null) {
+            CategoryResponse categoryResponse = new CategoryResponse();
+            categoryResponse.setId(subscription.getCategory().getId());
+            categoryResponse.setName(subscription.getCategory().getName());
+            categoryResponse.setColor(subscription.getCategory().getColor());
+            categoryResponse.setIcon(subscription.getCategory().getIcon());
+            categoryResponse.setSortOrder(subscription.getCategory().getSortOrder());
+            categoryResponse.setIsDefault(subscription.getCategory().getIsDefault());
+            response.setCategory(categoryResponse);
+        }
+
+        return response;
     }
 }

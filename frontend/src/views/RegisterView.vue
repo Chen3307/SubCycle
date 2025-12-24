@@ -82,17 +82,6 @@
           </el-button>
         </el-form-item>
 
-        <el-form-item>
-          <el-button
-            size="large"
-            class="preview-button"
-            :loading="loading"
-            @click="handlePreviewLogin"
-          >
-            前端預覽
-          </el-button>
-        </el-form-item>
-
         <div class="login-link">
           已經有帳號了？
           <router-link to="/login">立即登入</router-link>
@@ -166,7 +155,12 @@ const handleRegister = async () => {
         )
 
         if (result.success) {
-          ElMessage.success('註冊成功！')
+          ElMessage({
+            message: '註冊成功！我們已發送驗證郵件到您的信箱，請點擊郵件中的連結驗證您的 Email。',
+            type: 'success',
+            duration: 5000,
+            showClose: true
+          })
           router.push('/dashboard')
         } else {
           ElMessage.error(result.message || '註冊失敗')
@@ -178,22 +172,6 @@ const handleRegister = async () => {
       }
     }
   })
-}
-
-const handlePreviewLogin = async () => {
-  loading.value = true
-  try {
-    await authStore.mockLogin({
-      email: registerForm.email || 'preview@subcycle.app',
-      name: registerForm.name || '前端預覽用戶'
-    })
-    ElMessage.success('已開啟前端預覽模式')
-    router.push('/dashboard')
-  } catch (error) {
-    ElMessage.error('啟用預覽模式時發生錯誤')
-  } finally {
-    loading.value = false
-  }
 }
 </script>
 
@@ -264,18 +242,6 @@ const handlePreviewLogin = async () => {
 
 .register-button:hover {
   background: linear-gradient(120deg, #4a7ae0, #6ecfae);
-}
-
-.preview-button {
-  width: 100%;
-  border: 1px solid rgba(31, 42, 51, 0.2);
-  color: var(--charcoal);
-  background: #fff;
-}
-
-.preview-button:hover {
-  border-color: var(--cornflower);
-  color: var(--cornflower);
 }
 
 .login-link {

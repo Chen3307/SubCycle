@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+.vite
 
 # Environment variables
 .env
@@ -39,3 +40,6 @@ target/
 *.iml
 *.log
 .DS_Store
+
+# Claude Code CLI configuration
+.claude

@@ -56,16 +56,12 @@
           </el-button>
         </el-form-item>
 
-        <el-form-item>
-          <el-button
-            size="large"
-            class="preview-button"
-            :loading="loading"
-            @click="handlePreviewLogin"
-          >
-            前端預覽
-          </el-button>
-        </el-form-item>
+        <div v-if="showResendVerification" class="resend-verification">
+          尚未驗證 Email？
+          <el-link type="primary" @click="handleResendVerification">
+            重新寄送驗證信
+          </el-link>
+        </div>
 
         <div class="register-link">
           還沒有帳號？
@@ -77,9 +73,10 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { authAPI } from '../api'
 import { ElMessage } from 'element-plus'
 import UserIcon from '../components/icons/UserIcon.vue'
 import Key1 from '../components/icons/Key1.vue'
@@ -89,6 +86,7 @@ const authStore = useAuthStore()
 
 const loginFormRef = ref(null)
 const loading = ref(false)
+const loginError = ref('')
 
 const loginForm = reactive({
   email: '',
@@ -112,6 +110,7 @@ const handleLogin = async () => {
   await loginFormRef.value.validate(async (valid) => {
     if (valid) {
       loading.value = true
+      loginError.value = ''
       try {
         const result = await authStore.login(loginForm.email, loginForm.password)
 
@@ -119,10 +118,12 @@ const handleLogin = async () => {
           ElMessage.success('登入成功！')
           router.push('/dashboard')
         } else {
-          ElMessage.error(result.message || '登入失敗')
+          loginError.value = result.message || '登入失敗'
+          ElMessage.error(loginError.value)
         }
       } catch (error) {
-        ElMessage.error('登入時發生錯誤')
+        loginError.value = '登入時發生錯誤'
+        ElMessage.error(loginError.value)
       } finally {
         loading.value = false
       }
@@ -130,19 +131,20 @@ const handleLogin = async () => {
   })
 }
 
-const handlePreviewLogin = async () => {
-  loading.value = true
+const showResendVerification = computed(() => loginError.value === '請先完成 Email 驗證')
+
+const handleResendVerification = async () => {
+  if (!loginForm.email) {
+    ElMessage.error('請先輸入 Email')
+    return
+  }
+
   try {
-    await authStore.mockLogin({
-      email: loginForm.email || 'preview@subcycle.app',
-      name: loginForm.email ? loginForm.email.split('@')[0] : '前端預覽用戶'
-    })
-    ElMessage.success('已啟用前端預覽模式')
-    router.push('/dashboard')
+    await authAPI.resendVerification(loginForm.email)
+    ElMessage.success('驗證信已重新發送，請檢查信箱')
   } catch (error) {
-    ElMessage.error('登入時發生錯誤')
-  } finally {
-    loading.value = false
+    const message = error.response?.data?.message || '重新發送驗證信失敗'
+    ElMessage.error(message)
   }
 }
 </script>
@@ -216,23 +218,19 @@ const handlePreviewLogin = async () => {
   background: linear-gradient(120deg, #4a7ae0, #6ecfae);
 }
 
-.preview-button {
-  width: 100%;
-  border: 1px solid rgba(31, 42, 51, 0.2);
-  color: var(--charcoal);
-  background: #fff;
-}
-
-.preview-button:hover {
-  border-color: var(--cornflower);
-  color: var(--cornflower);
-}
-
 .register-link {
   text-align: center;
   color: var(--charcoal);
   font-size: 13px;
   margin-top: 10px;
+}
+
+.resend-verification {
+  text-align: center;
+  color: rgba(31, 42, 51, 0.7);
+  font-size: 12px;
+  margin-top: -6px;
+  margin-bottom: 6px;
 }
 
 .register-link a {

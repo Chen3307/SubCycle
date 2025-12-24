@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email 驗證</title>
+    <style>
+        body {
+            font-family: 'Arial', 'Microsoft JhengHei', sans-serif;
+            line-height: 1.6;
+            color: #6495ed;
+            background-color: #ffffff;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: #6eb5a0;
+            color: #ffffff;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .logo {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 12px;
+        }
+        .content {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+        }
+        .highlight {
+            background: #ffffff;
+            padding: 20px;
+            border-left: 4px solid #6495ed;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 40px;
+            background: #6495ed;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .button:hover {
+            background: #6eb5a0;
+        }
+        .footer {
+            text-align: center;
+            color: #6495ed;
+            font-size: 12px;
+            margin-top: 30px;
+        }
+        .note {
+            font-size: 14px;
+            color: #6495ed;
+            margin-top: 20px;
+            padding: 15px;
+            background: #ffffff;
+            border-left: 4px solid #6495ed;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img th:if="${logoUrl != null and !#strings.isEmpty(logoUrl)}" th:src="${logoUrl}" alt="Logo" class="logo" />
+        <h1 th:text="${appName}">SubCycle</h1>
+        <p>歡迎加入！請驗證您的電子郵件</p>
+    </div>
+    <div class="content">
+        <p>親愛的 <strong th:text="${userName}">用戶</strong>，您好！</p>
+
+        <div class="highlight">
+            <h2>感謝您註冊 <span th:text="${appName}">SubCycle</span>！</h2>
+            <p>為了確保您的帳號安全，請點擊下方按鈕驗證您的電子郵件地址：</p>
+        </div>
+
+        <div style="text-align: center;">
+            <a th:href="${verificationUrl}" class="button">
+                驗證我的電子郵件
+            </a>
+        </div>
+
+        <div class="note">
+            <p><strong>注意事項：</strong></p>
+            <ul style="margin: 5px 0;">
+                <li>此驗證連結將在 <strong>24 小時</strong>後失效</li>
+                <li>如果您沒有註冊此帳號，請忽略此郵件</li>
+                <li>如果按鈕無法點擊，請複製以下連結到瀏覽器：<br>
+                    <span style="word-break: break-all; color: #6495ed;" th:text="${verificationUrl}">https://example.com/verify</span>
+                </li>
+            </ul>
+        </div>
+
+        <p>驗證成功後，您就可以開始使用所有功能！</p>
+        <p>祝您使用愉快！</p>
+    </div>
+    <div class="footer">
+        <p>&copy; 2025 <span th:text="${appName}">SubCycle</span></p>
+        <p>這是一封自動發送的郵件，請勿直接回覆。</p>
+    </div>
+</body>
+</html>

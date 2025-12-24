@@ -2,8 +2,10 @@ package com.subcycle.controller;
 
 import com.subcycle.dto.SubscriptionRequest;
 import com.subcycle.dto.SubscriptionResponse;
+import com.subcycle.dto.UpdateNotificationSettingsRequest;
 import com.subcycle.entity.User;
 import com.subcycle.service.SubscriptionService;
+import com.subcycle.service.SubscriptionScheduleService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -12,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -24,6 +27,9 @@ public class SubscriptionController {
 
     @Autowired
     private SubscriptionService subscriptionService;
+
+    @Autowired
+    private SubscriptionScheduleService subscriptionScheduleService;
 
     @GetMapping
     public ResponseEntity<List<SubscriptionResponse>> list(@AuthenticationPrincipal User user) {
@@ -72,5 +78,27 @@ public class SubscriptionController {
     ) {
         subscriptionService.deleteSubscription(user, id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "手動推進過期的下次扣款日", description = "將已過期的 nextPaymentDate 依週期往後推至最近未來日期")
+    @PostMapping("/rollover")
+    public ResponseEntity<Map<String, Integer>> rollOverExpired(
+            @AuthenticationPrincipal User user
+    ) {
+        int updated = subscriptionScheduleService.rollOverExpiredForUser(user);
+        return ResponseEntity.ok(Map.of("updated", updated));
+    }
+
+    @Operation(summary = "更新訂閱通知開關", description = "批次更新使用者所有訂閱的通知開關")
+    @PutMapping("/notifications")
+    public ResponseEntity<Map<String, Object>> updateNotificationSettings(
+            @AuthenticationPrincipal User user,
+            @Valid @RequestBody UpdateNotificationSettingsRequest request
+    ) {
+        int updated = subscriptionService.updateNotificationEnabled(user, request.getEnabled());
+        return ResponseEntity.ok(Map.of(
+                "updated", updated,
+                "enabled", request.getEnabled()
+        ));
     }
 }

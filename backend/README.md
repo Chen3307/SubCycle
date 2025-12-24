@@ -35,80 +35,6 @@ mvn spring-boot:run
 - 在 IntelliJ IDEA 或 Eclipse 中開啟 `backend` 資料夾
 - 執行 `SubCycleApplication.java` 主程式
 
-### 3. 測試連線
-
-應用程式啟動後（預設 port: 8080），開啟瀏覽器測試：
-
-#### ✅ 測試 API 是否運作
-
-```
-http://localhost:8080/api/test
-```
-
-**預期回應：**
-
-```json
-{
-  "status": "success",
-  "message": "SubCycle Backend API 正常運作！",
-  "timestamp": 1732700000000
-}
-```
-
-#### ✅ 測試資料庫連線
-
-```
-http://localhost:8080/api/test/db
-```
-
-**預期回應：**
-
-```json
-{
-  "status": "success",
-  "message": "資料庫連線成功！",
-  "database": "subcycle",
-  "url": "jdbc:mysql://localhost:3306/subcycle"
-}
-```
-
-#### ✅ 測試查詢使用者
-
-```
-http://localhost:8080/api/test/users
-```
-
-**預期回應：**
-
-```json
-{
-  "status": "success",
-  "message": "查詢成功",
-  "count": 1,
-  "data": [
-    {
-      "id": 1,
-      "email": "demo@subcycle.com",
-      "name": "Demo 用戶",
-      "currency": "TWD",
-      "isActive": true
-    }
-  ]
-}
-```
-
-#### ✅ 測試根據 email 查詢
-
-```
-http://localhost:8080/api/test/user?email=demo@subcycle.com
-```
-
-#### ✅ 測試統計資料
-
-```
-http://localhost:8080/api/test/stats
-```
-
 ---
 
 ## 📁 專案結構
@@ -124,10 +50,8 @@ backend/
 │   │   │   ├── repository/                    # 資料訪問層
 │   │   │   │   └── UserRepository.java
 │   │   │   └── controller/                    # API 控制器
-│   │   │       └── TestController.java
 │   │   └── resources/
 │   │       └── application.properties         # 設定檔
-│   └── test/                                  # 測試程式
 └── pom.xml                                    # Maven 設定檔
 ```
 

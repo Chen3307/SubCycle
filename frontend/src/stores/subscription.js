@@ -9,11 +9,33 @@ export const useSubscriptionStore = defineStore('subscription', () => {
   const error = ref(null)
   const readNotifications = ref(JSON.parse(localStorage.getItem('readNotifications') || '[]'))
 
+  // 後端欄位(price/billingCycle/category) 轉前端欄位(amount/cycle/categoryId)
+  const normalizeSubscription = (sub) => ({
+    id: sub.id,
+    name: sub.name,
+    amount: Number(sub.price ?? sub.amount ?? 0),
+    cycle: sub.billingCycle ?? sub.cycle ?? 'monthly',
+    nextPaymentDate: sub.nextPaymentDate,
+    startDate: sub.startDate ?? sub.nextPaymentDate ?? null,
+    endDate: sub.endDate ?? null,
+    categoryId: sub.category?.id ?? sub.categoryId ?? null,
+    status: sub.status ?? 'active',
+    description: sub.description ?? '',
+    currency: sub.currency ?? 'TWD',
+    autoRenew: sub.autoRenew ?? true,
+    reminderSent: sub.reminderSent ?? false,
+    notificationEnabled: sub.notificationEnabled ?? true,
+    includeHistoricalPayments: sub.includeHistoricalPayments ?? false,
+    logoUrl: sub.logoUrl ?? '',
+    websiteUrl: sub.websiteUrl ?? '',
+    notes: sub.notes ?? ''
+  })
+
   const fetchSubscriptions = async () => {
     try {
       loading.value = true
       const { data } = await subscriptionAPI.getAll()
-      subscriptions.value = data
+      subscriptions.value = (data || []).map(normalizeSubscription)
       error.value = null
     } catch (err) {
       error.value = err.response?.data?.message || '無法取得訂閱資料'
@@ -23,17 +45,116 @@ export const useSubscriptionStore = defineStore('subscription', () => {
     }
   }
 
-  // 計算未來 30 天應付總額
-  const next30DaysTotal = computed(() => {
-    const today = dayjs()
-    const next30Days = today.add(30, 'day')
+  const getCycleStep = (cycle) => {
+    if (cycle === 'daily') return { amount: 1, unit: 'day' }
+    if (cycle === 'weekly') return { amount: 1, unit: 'week' }
+    if (cycle === 'monthly') return { amount: 1, unit: 'month' }
+    if (cycle === 'quarterly') return { amount: 3, unit: 'month' }
+    if (cycle === 'yearly') return { amount: 1, unit: 'year' }
+    return { amount: 1, unit: 'month' }
+  }
 
-    return subscriptions.value
-      .filter(sub => {
-        const paymentDate = dayjs(sub.nextPaymentDate)
-        return paymentDate.isAfter(today) && paymentDate.isBefore(next30Days)
+  const alignToRangeStart = (anchorDate, rangeStart, cycle) => {
+    if (!anchorDate?.isValid()) return anchorDate
+    const { amount, unit } = getCycleStep(cycle)
+    let cursor = anchorDate
+
+    if (cursor.isBefore(rangeStart, 'day')) {
+      const diff = rangeStart.diff(cursor, unit, true)
+      const steps = Math.floor(diff / amount)
+      if (steps > 0) {
+        cursor = cursor.add(steps * amount, unit)
+      }
+      while (cursor.isBefore(rangeStart, 'day')) {
+        cursor = cursor.add(amount, unit)
+      }
+    } else if (cursor.isAfter(rangeStart, 'day')) {
+      const diff = cursor.diff(rangeStart, unit, true)
+      const steps = Math.floor(diff / amount)
+      if (steps > 0) {
+        cursor = cursor.subtract(steps * amount, unit)
+      }
+      while (cursor.isAfter(rangeStart, 'day')) {
+        cursor = cursor.subtract(amount, unit)
+      }
+      if (cursor.isBefore(rangeStart, 'day')) {
+        cursor = cursor.add(amount, unit)
+      }
+    }
+
+    return cursor
+  }
+
+  const forEachPaymentInRange = (subscription, rangeStart, rangeEnd, onPayment) => {
+    if (!subscription?.nextPaymentDate || !onPayment) return
+    const startDate = subscription.startDate ? dayjs(subscription.startDate) : null
+    const endDate = subscription.endDate ? dayjs(subscription.endDate) : null
+    const includeHistorical = subscription.includeHistoricalPayments ?? false
+    const anchorDate = includeHistorical && startDate
+      ? startDate
+      : dayjs(subscription.nextPaymentDate)
+    let cursor = alignToRangeStart(anchorDate, rangeStart, subscription.cycle)
+    if (!cursor?.isValid()) return
+
+    const { amount, unit } = getCycleStep(subscription.cycle)
+    const maxIterations = 1000
+    let iterations = 0
+
+    while (cursor.isSameOrBefore(rangeEnd, 'day') && iterations < maxIterations) {
+      let paymentDate = cursor
+
+      if (startDate && cursor.isBefore(startDate, 'day')) {
+        const nextDate = cursor.add(amount, unit)
+        if (nextDate.isAfter(startDate, 'day')) {
+          paymentDate = startDate
+        } else {
+          cursor = nextDate
+          iterations++
+          continue
+        }
+      }
+
+      const isAfterEnd = endDate && paymentDate.isAfter(endDate, 'day')
+      if (!isAfterEnd
+        && paymentDate.isSameOrAfter(rangeStart, 'day')
+        && paymentDate.isSameOrBefore(rangeEnd, 'day')) {
+        onPayment(paymentDate)
+      }
+      cursor = cursor.add(amount, unit)
+      iterations++
+    }
+  }
+
+  const calculateRangeTotal = (rangeStart, rangeEnd) => {
+    const today = dayjs().startOf('day')
+    let total = 0
+    subscriptions.value.forEach(sub => {
+      forEachPaymentInRange(sub, rangeStart, rangeEnd, (paymentDate) => {
+        if (!sub.includeHistoricalPayments && paymentDate.isBefore(today, 'day')) {
+          return
+        }
+        total += sub.amount
       })
-      .reduce((total, sub) => total + sub.amount, 0)
+    })
+    return total
+  }
+
+  // 計算本月扣款總額（含重複扣款次數）
+  const currentMonthTotal = computed(() => {
+    const today = dayjs()
+    const monthStart = today.startOf('month')
+    const monthEnd = today.endOf('month')
+    return calculateRangeTotal(monthStart, monthEnd)
+  })
+
+  // 計算下個月扣款總額（含重複扣款次數）
+  const nextMonthTotal = computed(() => {
+    const today = dayjs()
+    const nextMonth = today.add(1, 'month')
+    const monthStart = nextMonth.startOf('month')
+    const monthEnd = nextMonth.endOf('month')
+
+    return calculateRangeTotal(monthStart, monthEnd)
   })
 
   // 計算總月均支出
@@ -88,13 +209,18 @@ export const useSubscriptionStore = defineStore('subscription', () => {
       amount: Number(subscription.amount),
       cycle: subscription.cycle,
       nextPaymentDate: subscription.nextPaymentDate,
+      startDate: subscription.startDate || subscription.nextPaymentDate,
+      endDate: subscription.endDate || null,
       categoryId: subscription.categoryId,
       status: 'active',
-      description: subscription.description || ''
+      description: subscription.description || '',
+      notificationEnabled: subscription.notificationEnabled ?? true,
+      includeHistoricalPayments: subscription.includeHistoricalPayments ?? false
     }
     const { data } = await subscriptionAPI.create(payload)
-    subscriptions.value.push(data)
-    return data
+    const normalized = normalizeSubscription(data)
+    subscriptions.value.push(normalized)
+    return normalized
   }
 
   // 更新訂閱
@@ -104,16 +230,21 @@ export const useSubscriptionStore = defineStore('subscription', () => {
       amount: Number(updatedData.amount),
       cycle: updatedData.cycle,
       nextPaymentDate: updatedData.nextPaymentDate,
+      startDate: updatedData.startDate || updatedData.nextPaymentDate,
+      endDate: updatedData.endDate || null,
       categoryId: updatedData.categoryId,
       status: updatedData.status || 'active',
-      description: updatedData.description || ''
+      description: updatedData.description || '',
+      notificationEnabled: updatedData.notificationEnabled ?? true,
+      includeHistoricalPayments: updatedData.includeHistoricalPayments ?? false
     }
     const { data } = await subscriptionAPI.update(id, payload)
+    const normalized = normalizeSubscription(data)
     const index = subscriptions.value.findIndex(s => s.id === id)
     if (index !== -1) {
-      subscriptions.value[index] = data
+      subscriptions.value[index] = normalized
     }
-    return data
+    return normalized
   }
 
   // 刪除訂閱
@@ -125,76 +256,26 @@ export const useSubscriptionStore = defineStore('subscription', () => {
     }
   }
 
+  // 手動推進過期的扣款日（呼叫後端 rollover）
+  const rollOverExpiredDates = async () => {
+    const { data } = await subscriptionAPI.rollover()
+    // 重新取得訂閱以反映最新日期
+    await fetchSubscriptions()
+    return data?.updated ?? 0
+  }
+
   const clear = () => {
     subscriptions.value = []
     error.value = null
     clearReadNotifications()
   }
 
-  // 載入模擬數據（用於前端預覽）
-  const loadMockData = () => {
-    const today = dayjs()
-    subscriptions.value = [
-      // 串流影音
-      { id: 1, name: 'Netflix', amount: 390, cycle: 'monthly', nextPaymentDate: today.add(3, 'day').format('YYYY-MM-DD'), categoryId: 1, status: 'active', description: 'Premium 4K 方案' },
-      { id: 2, name: 'Disney+', amount: 270, cycle: 'monthly', nextPaymentDate: today.add(8, 'day').format('YYYY-MM-DD'), categoryId: 1, status: 'active', description: '迪士尼全系列' },
-      { id: 3, name: 'HBO GO', amount: 190, cycle: 'monthly', nextPaymentDate: today.add(13, 'day').format('YYYY-MM-DD'), categoryId: 1, status: 'active', description: 'HBO 原創影集' },
-      { id: 4, name: 'friDay影音', amount: 199, cycle: 'monthly', nextPaymentDate: today.add(6, 'day').format('YYYY-MM-DD'), categoryId: 1, status: 'active', description: '台灣本地平台' },
-
-      // 音樂
-      { id: 5, name: 'Spotify', amount: 149, cycle: 'monthly', nextPaymentDate: today.add(2, 'day').format('YYYY-MM-DD'), categoryId: 2, status: 'active', description: 'Premium 個人方案' },
-      { id: 6, name: 'YouTube Premium', amount: 179, cycle: 'monthly', nextPaymentDate: today.add(10, 'day').format('YYYY-MM-DD'), categoryId: 2, status: 'active', description: '無廣告 + Music' },
-      { id: 7, name: 'Apple Music', amount: 150, cycle: 'monthly', nextPaymentDate: today.add(24, 'day').format('YYYY-MM-DD'), categoryId: 2, status: 'active', description: '無損音質' },
-
-      // 雲端儲存
-      { id: 8, name: 'Google One', amount: 65, cycle: 'monthly', nextPaymentDate: today.add(16, 'day').format('YYYY-MM-DD'), categoryId: 3, status: 'active', description: '100GB 空間' },
-      { id: 9, name: 'Dropbox', amount: 330, cycle: 'monthly', nextPaymentDate: today.add(29, 'day').format('YYYY-MM-DD'), categoryId: 3, status: 'active', description: '2TB 專業方案' },
-      { id: 10, name: 'iCloud+', amount: 900, cycle: 'yearly', nextPaymentDate: today.add(93, 'day').format('YYYY-MM-DD'), categoryId: 3, status: 'active', description: '200GB 年付' },
-
-      // 生產力工具
-      { id: 11, name: 'ChatGPT Plus', amount: 600, cycle: 'monthly', nextPaymentDate: today.add(4, 'day').format('YYYY-MM-DD'), categoryId: 4, status: 'active', description: 'GPT-4 存取' },
-      { id: 12, name: 'Notion', amount: 150, cycle: 'monthly', nextPaymentDate: today.add(7, 'day').format('YYYY-MM-DD'), categoryId: 4, status: 'active', description: 'Personal Pro' },
-      { id: 13, name: 'Microsoft 365', amount: 2190, cycle: 'yearly', nextPaymentDate: today.add(51, 'day').format('YYYY-MM-DD'), categoryId: 4, status: 'active', description: '含 1TB OneDrive' },
-      { id: 14, name: 'Evernote', amount: 169, cycle: 'monthly', nextPaymentDate: today.add(27, 'day').format('YYYY-MM-DD'), categoryId: 4, status: 'active', description: 'Professional' },
-
-      // 遊戲娛樂
-      { id: 15, name: 'Xbox Game Pass', amount: 490, cycle: 'monthly', nextPaymentDate: today.add(5, 'day').format('YYYY-MM-DD'), categoryId: 5, status: 'active', description: 'Ultimate 方案' },
-      { id: 16, name: 'PlayStation Plus', amount: 1350, cycle: 'quarterly', nextPaymentDate: today.add(66, 'day').format('YYYY-MM-DD'), categoryId: 5, status: 'active', description: 'Extra 級別' },
-      { id: 17, name: 'Nintendo Switch Online', amount: 290, cycle: 'yearly', nextPaymentDate: today.add(130, 'day').format('YYYY-MM-DD'), categoryId: 5, status: 'active', description: '擴充包' },
-      { id: 18, name: 'Steam 錢包', amount: 500, cycle: 'monthly', nextPaymentDate: today.add(18, 'day').format('YYYY-MM-DD'), categoryId: 5, status: 'active', description: '每月預算' },
-
-      // 健康運動
-      { id: 19, name: 'Nike Training Club', amount: 0, cycle: 'yearly', nextPaymentDate: today.add(140, 'day').format('YYYY-MM-DD'), categoryId: 6, status: 'active', description: '免費健身' },
-      { id: 20, name: 'MyFitnessPal', amount: 320, cycle: 'yearly', nextPaymentDate: today.add(88, 'day').format('YYYY-MM-DD'), categoryId: 6, status: 'active', description: '營養追蹤' },
-      { id: 21, name: 'Headspace', amount: 399, cycle: 'yearly', nextPaymentDate: today.add(44, 'day').format('YYYY-MM-DD'), categoryId: 6, status: 'active', description: '冥想練習' },
-
-      // 新聞雜誌
-      { id: 22, name: 'The New York Times', amount: 140, cycle: 'monthly', nextPaymentDate: today.add(1, 'day').format('YYYY-MM-DD'), categoryId: 7, status: 'active', description: '數位訂閱' },
-      { id: 23, name: 'Readmoo 讀墨', amount: 199, cycle: 'monthly', nextPaymentDate: today.add(31, 'day').format('YYYY-MM-DD'), categoryId: 7, status: 'active', description: '電子書吃到飽' },
-      { id: 24, name: '天下雜誌', amount: 99, cycle: 'monthly', nextPaymentDate: today.add(9, 'day').format('YYYY-MM-DD'), categoryId: 7, status: 'active', description: '數位版' },
-
-      // 學習教育
-      { id: 25, name: 'Hahow 好學校', amount: 490, cycle: 'monthly', nextPaymentDate: today.add(12, 'day').format('YYYY-MM-DD'), categoryId: 8, status: 'active', description: '無限會員' },
-      { id: 26, name: 'Coursera Plus', amount: 1780, cycle: 'yearly', nextPaymentDate: today.add(171, 'day').format('YYYY-MM-DD'), categoryId: 8, status: 'active', description: '7000+ 課程' },
-      { id: 27, name: 'Duolingo Super', amount: 420, cycle: 'yearly', nextPaymentDate: today.add(70, 'day').format('YYYY-MM-DD'), categoryId: 8, status: 'active', description: '語言學習' },
-
-      // 設計開發
-      { id: 28, name: 'GitHub Copilot', amount: 300, cycle: 'monthly', nextPaymentDate: today.add(14, 'day').format('YYYY-MM-DD'), categoryId: 9, status: 'active', description: 'AI 程式助手' },
-      { id: 29, name: 'Figma', amount: 450, cycle: 'monthly', nextPaymentDate: today.add(22, 'day').format('YYYY-MM-DD'), categoryId: 9, status: 'active', description: 'Professional' },
-      { id: 30, name: 'Adobe Creative Cloud', amount: 1785, cycle: 'monthly', nextPaymentDate: today.add(15, 'day').format('YYYY-MM-DD'), categoryId: 9, status: 'active', description: '攝影方案' },
-
-      // 生活購物
-      { id: 31, name: 'Amazon Prime', amount: 170, cycle: 'monthly', nextPaymentDate: today.add(26, 'day').format('YYYY-MM-DD'), categoryId: 10, status: 'active', description: '免運 + Video' },
-      { id: 32, name: 'Costco 會員', amount: 1350, cycle: 'yearly', nextPaymentDate: today.add(245, 'day').format('YYYY-MM-DD'), categoryId: 10, status: 'active', description: '金星會員' },
-      { id: 33, name: 'Line 貼圖小舖', amount: 150, cycle: 'monthly', nextPaymentDate: today.add(11, 'day').format('YYYY-MM-DD'), categoryId: 10, status: 'active', description: '每月預算' }
-    ]
-  }
-
   return {
     subscriptions,
     loading,
     error,
-    next30DaysTotal,
+    currentMonthTotal,
+    nextMonthTotal,
     monthlyAverage,
     upcomingSubscriptions,
     unreadUpcomingSubscriptions,
@@ -202,8 +283,8 @@ export const useSubscriptionStore = defineStore('subscription', () => {
     addSubscription,
     updateSubscription,
     deleteSubscription,
+    rollOverExpiredDates,
     clear,
-    loadMockData,
     markNotificationAsRead,
     clearReadNotifications
   }

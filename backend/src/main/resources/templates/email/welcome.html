@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>歡迎加入</title>
+    <style>
+        body {
+            font-family: 'Arial', 'Microsoft JhengHei', sans-serif;
+            line-height: 1.6;
+            color: #6495ed;
+            background-color: #ffffff;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: #6eb5a0;
+            color: #ffffff;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .logo {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 12px;
+        }
+        .content {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+        }
+        .features {
+            background: #ffffff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .features li {
+            margin: 10px 0;
+        }
+        .footer {
+            text-align: center;
+            color: #6495ed;
+            font-size: 12px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img th:if="${logoUrl != null and !#strings.isEmpty(logoUrl)}" th:src="${logoUrl}" alt="Logo" class="logo" />
+        <h1>🎉 歡迎加入 <span th:text="${appName}">SubCycle</span>！</h1>
+    </div>
+    <div class="content">
+        <p>親愛的 <strong th:text="${userName}">用戶</strong>，您好！</p>
+
+        <p>歡迎加入我們的訂閱管理平台！我們很高興能為您提供服務。</p>
+
+        <div class="features">
+            <h3>您可以使用以下功能：</h3>
+            <ul>
+                <li>📊 管理所有訂閱服務</li>
+                <li>💰 追蹤訂閱費用</li>
+                <li>🔔 接收續訂提醒</li>
+                <li>📈 查看消費統計</li>
+                <li>📅 日曆視圖管理</li>
+            </ul>
+        </div>
+
+        <p>立即開始管理您的訂閱，讓生活更有條理！</p>
+
+        <p>如有任何問題，歡迎隨時聯繫我們。</p>
+    </div>
+    <div class="footer">
+        <p>&copy; 2025 <span th:text="${appName}">SubCycle</span></p>
+    </div>
+</body>
+</html>

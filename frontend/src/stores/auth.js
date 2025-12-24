@@ -9,9 +9,9 @@ export const useAuthStore = defineStore('auth', () => {
   const login = async (email, password) => {
     try {
       const response = await authAPI.login(email, password)
-      const { token: jwtToken, userId, email: userEmail, name } = response.data
+      const { token: jwtToken, userId, email: userEmail, name, role } = response.data
 
-      const userData = { id: userId, email: userEmail, name }
+      const userData = { id: userId, email: userEmail, name, role }
       user.value = userData
       token.value = jwtToken
       localStorage.setItem('token', jwtToken)
@@ -27,9 +27,9 @@ export const useAuthStore = defineStore('auth', () => {
   const register = async (email, password, name) => {
     try {
       const response = await authAPI.register(email, password, name)
-      const { token: jwtToken, userId, email: userEmail, name: userName } = response.data
+      const { token: jwtToken, userId, email: userEmail, name: userName, role } = response.data
 
-      const userData = { id: userId, email: userEmail, name: userName }
+      const userData = { id: userId, email: userEmail, name: userName, role }
       user.value = userData
       token.value = jwtToken
       localStorage.setItem('token', jwtToken)
@@ -42,33 +42,13 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const mockLogin = (payload = {}) => {
-    const timestamp = Date.now()
-    const mockUser = {
-      id: payload.id || `mock-${timestamp}`,
-      email: payload.email || 'preview@subcycle.app',
-      name: payload.name || '前端預覽用戶'
-    }
-    const mockToken = payload.token || `mock-token-${timestamp}`
-
-    user.value = mockUser
-    token.value = mockToken
-    localStorage.setItem('token', mockToken)
-    localStorage.setItem('user', JSON.stringify(mockUser))
-
-    return Promise.resolve({ success: true, mock: true, user: mockUser })
-  }
-
   const logout = () => {
     // 立即清除内存中的状态（同步）
     user.value = null
     token.value = ''
 
-    // 异步清理 localStorage，避免阻塞 UI
-    requestIdleCallback(() => {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-    }, { timeout: 100 })
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
   }
 
   const checkAuth = () => {
@@ -86,7 +66,6 @@ export const useAuthStore = defineStore('auth', () => {
     token,
     login,
     register,
-    mockLogin,
     logout,
     checkAuth
   }

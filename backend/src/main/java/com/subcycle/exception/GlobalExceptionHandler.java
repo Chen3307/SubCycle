@@ -17,86 +17,77 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<ErrorResponse> handleResponseStatusException(
-            ResponseStatusException ex,
-            HttpServletRequest request
-    ) {
-        ErrorResponse error = new ErrorResponse(
-                ex.getStatusCode().value(),
-                ex.getStatusCode().toString(),
-                ex.getReason() != null ? ex.getReason() : "發生錯誤",
-                request.getRequestURI()
-        );
-        return ResponseEntity.status(ex.getStatusCode()).body(error);
-    }
+        @ExceptionHandler(ResponseStatusException.class)
+        public ResponseEntity<ErrorResponse> handleResponseStatusException(
+                        ResponseStatusException ex,
+                        HttpServletRequest request) {
+                ErrorResponse error = new ErrorResponse(
+                                ex.getStatusCode().value(),
+                                ex.getStatusCode().toString(),
+                                ex.getReason() != null ? ex.getReason() : "發生錯誤",
+                                request.getRequestURI());
+                return ResponseEntity.status(ex.getStatusCode()).body(error);
+        }
 
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ErrorResponse> handleBadCredentials(
-            BadCredentialsException ex,
-            HttpServletRequest request
-    ) {
-        ErrorResponse error = new ErrorResponse(
-                HttpStatus.UNAUTHORIZED.value(),
-                "Unauthorized",
-                "帳號或密碼錯誤",
-                request.getRequestURI()
-        );
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-    }
+        @ExceptionHandler(BadCredentialsException.class)
+        public ResponseEntity<ErrorResponse> handleBadCredentials(
+                        BadCredentialsException ex,
+                        HttpServletRequest request) {
+                ErrorResponse error = new ErrorResponse(
+                                HttpStatus.UNAUTHORIZED.value(),
+                                "Unauthorized",
+                                "帳號或密碼錯誤",
+                                request.getRequestURI());
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationExceptions(
-            MethodArgumentNotValidException ex,
-            HttpServletRequest request
-    ) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
+        @ExceptionHandler(MethodArgumentNotValidException.class)
+        public ResponseEntity<Map<String, Object>> handleValidationExceptions(
+                        MethodArgumentNotValidException ex,
+                        HttpServletRequest request) {
+                Map<String, String> errors = new HashMap<>();
+                ex.getBindingResult().getAllErrors().forEach((error) -> {
+                        String fieldName = ((FieldError) error).getField();
+                        String errorMessage = error.getDefaultMessage();
+                        errors.put(fieldName, errorMessage);
+                });
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("timestamp", java.time.LocalDateTime.now());
-        response.put("status", HttpStatus.BAD_REQUEST.value());
-        response.put("error", "Validation Failed");
-        response.put("message", "輸入資料驗證失敗");
-        response.put("errors", errors);
-        response.put("path", request.getRequestURI());
+                Map<String, Object> response = new HashMap<>();
+                response.put("timestamp", java.time.LocalDateTime.now());
+                response.put("status", HttpStatus.BAD_REQUEST.value());
+                response.put("error", "Validation Failed");
+                response.put("message", "輸入資料驗證失敗");
+                response.put("errors", errors);
+                response.put("path", request.getRequestURI());
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgument(
-            IllegalArgumentException ex,
-            HttpServletRequest request
-    ) {
-        ErrorResponse error = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                "Bad Request",
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
-    }
+        @ExceptionHandler(IllegalArgumentException.class)
+        public ResponseEntity<ErrorResponse> handleIllegalArgument(
+                        IllegalArgumentException ex,
+                        HttpServletRequest request) {
+                ErrorResponse error = new ErrorResponse(
+                                HttpStatus.BAD_REQUEST.value(),
+                                "Bad Request",
+                                ex.getMessage(),
+                                request.getRequestURI());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(
-            Exception ex,
-            HttpServletRequest request
-    ) {
-        ErrorResponse error = new ErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Internal Server Error",
-                "伺服器發生錯誤，請稍後再試",
-                request.getRequestURI()
-        );
+        @ExceptionHandler(Exception.class)
+        public ResponseEntity<ErrorResponse> handleGenericException(
+                        Exception ex,
+                        HttpServletRequest request) {
+                ErrorResponse error = new ErrorResponse(
+                                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                                "Internal Server Error",
+                                "伺服器發生錯誤，請稍後再試",
+                                request.getRequestURI());
 
-        // 記錄詳細錯誤日誌
-        ex.printStackTrace();
+                // 記錄詳細錯誤日誌
+                ex.printStackTrace();
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-    }
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
 }

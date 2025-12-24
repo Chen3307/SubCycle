@@ -34,6 +34,9 @@ public class Category {
     @Column(name = "sort_order")
     private Integer sortOrder;
 
+    @Column(name = "is_default", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean isDefault;
+
     @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
 
@@ -44,6 +47,12 @@ public class Category {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if (isDefault == null) {
+            isDefault = false;
+        }
+        if (sortOrder == null) {
+            sortOrder = 0;
+        }
     }
 
     @PreUpdate

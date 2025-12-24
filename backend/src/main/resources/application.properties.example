@@ -1,0 +1,126 @@
+# ==============================================
+# SubCycle Application Configuration
+# ==============================================
+
+# Application Name
+spring.application.name=subcycle-backend
+app.name=SubCycle
+app.logo-url=https://your-domain.example/logo.svg
+
+# ==============================================
+# Server Configuration
+# ==============================================
+server.port=8080
+server.servlet.context-path=/
+
+# ==============================================
+# Database Configuration
+# ==============================================
+spring.datasource.url=${DB_URL:jdbc:mysql://localhost:3306/subcycle_db?useSSL=false&serverTimezone=Asia/Taipei&allowPublicKeyRetrieval=true}
+spring.datasource.username=${DB_USERNAME:subcycle_user}
+spring.datasource.password=${DB_PASSWORD:subcycle_password}
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# JPA / Hibernate Configuration
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+spring.jpa.properties.hibernate.format_sql=true
+
+# ==============================================
+# JWT Configuration
+# ==============================================
+jwt.secret=${JWT_SECRET:your-super-secret-jwt-key-change-this-in-production-at-least-256-bits}
+jwt.expiration=${JWT_EXPIRATION:86400000}
+jwt.refresh.expiration=${JWT_REFRESH_EXPIRATION:604800000}
+
+# ==============================================
+# Email Configuration (Gmail Example)
+# ==============================================
+spring.mail.host=${MAIL_HOST:smtp.gmail.com}
+spring.mail.port=${MAIL_PORT:587}
+spring.mail.username=${MAIL_USERNAME:your-email@gmail.com}
+spring.mail.password=${MAIL_PASSWORD:your-app-password}
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+spring.mail.properties.mail.smtp.starttls.required=true
+spring.mail.properties.mail.smtp.ssl.trust=${MAIL_HOST:smtp.gmail.com}
+
+# Email Templates
+spring.thymeleaf.prefix=classpath:/templates/
+spring.thymeleaf.suffix=.html
+spring.thymeleaf.mode=HTML
+spring.thymeleaf.encoding=UTF-8
+spring.thymeleaf.cache=false
+
+# ==============================================
+# Logging Configuration
+# ==============================================
+logging.level.root=INFO
+logging.level.com.subcycle=DEBUG
+logging.level.org.springframework.web=INFO
+logging.level.org.hibernate.SQL=DEBUG
+logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
+
+# Log File Configuration
+logging.file.name=logs/subcycle.log
+logging.file.max-size=10MB
+logging.file.max-history=30
+
+# ==============================================
+# Actuator Configuration (for Health Checks)
+# ==============================================
+management.endpoints.web.exposure.include=health,info,metrics
+management.endpoint.health.show-details=when-authorized
+management.health.db.enabled=true
+
+# ==============================================
+# Swagger / OpenAPI Configuration
+# ==============================================
+springdoc.api-docs.path=/api-docs
+springdoc.swagger-ui.path=/swagger-ui.html
+springdoc.swagger-ui.operationsSorter=method
+springdoc.swagger-ui.tagsSorter=alpha
+
+# ==============================================
+# CORS Configuration
+# ==============================================
+# Configured in SecurityConfig.java
+
+# ==============================================
+# File Upload Configuration
+# ==============================================
+spring.servlet.multipart.enabled=true
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=10MB
+
+# ==============================================
+# Rate Limiting Configuration
+# ==============================================
+# Configured in RateLimitConfig.java
+# Default: 100 requests per minute per user/IP
+
+# ==============================================
+# Production Settings
+# ==============================================
+# Uncomment and configure for production
+
+# spring.jpa.hibernate.ddl-auto=validate
+# spring.jpa.show-sql=false
+# logging.level.com.subcycle=INFO
+# spring.thymeleaf.cache=true
+
+# ==============================================
+# Environment-Specific Configuration
+# ==============================================
+# Use spring.profiles.active to switch between environments
+# spring.profiles.active=dev,prod
+
+# ==============================================
+# Notes
+# ==============================================
+# 1. For Gmail, use App Password instead of your account password
+#    - Go to Google Account > Security > 2-Step Verification > App passwords
+# 2. Change JWT_SECRET to a strong random string in production
+# 3. Use environment variables for sensitive data
+# 4. Set spring.jpa.hibernate.ddl-auto=validate in production

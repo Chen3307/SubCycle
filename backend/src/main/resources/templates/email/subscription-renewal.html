@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>訂閱續訂提醒</title>
+    <style>
+        body {
+            font-family: 'Arial', 'Microsoft JhengHei', sans-serif;
+            line-height: 1.6;
+            color: #6495ed;
+            background-color: #ffffff;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: #6eb5a0;
+            color: #ffffff;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .logo {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 12px;
+        }
+        .content {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+        }
+        .highlight {
+            background: #ffffff;
+            padding: 20px;
+            border-left: 4px solid #6495ed;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #6495ed;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .footer {
+            text-align: center;
+            color: #6495ed;
+            font-size: 12px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img th:if="${logoUrl != null and !#strings.isEmpty(logoUrl)}" th:src="${logoUrl}" alt="Logo" class="logo" />
+        <h1 th:text="${appName}">SubCycle</h1>
+        <p>訂閱續訂提醒</p>
+    </div>
+    <div class="content">
+        <p>親愛的 <strong th:text="${userName}">用戶</strong>，您好！</p>
+
+        <div class="highlight">
+            <h2>訂閱即將續訂</h2>
+            <p><strong>訂閱名稱：</strong><span th:text="${subscriptionName}">Netflix</span></p>
+            <p><strong>續訂日期：</strong><span th:text="${renewalDate}">2024-12-15</span></p>
+            <p><strong>金額：</strong>NT$ <span th:text="${amount}">390</span></p>
+        </div>
+
+        <p>您的訂閱即將自動續訂，請確保您的付款方式有足夠的餘額。</p>
+        <p>如需取消或修改訂閱，請登入系統進行設置。</p>
+
+        <p>祝您使用愉快！</p>
+    </div>
+    <div class="footer">
+        <p>&copy; 2025 <span th:text="${appName}">SubCycle</span></p>
+    </div>
+</body>
+</html>

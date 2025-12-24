@@ -45,8 +45,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
@@ -55,11 +55,13 @@ import { useCategoryStore } from '../stores/category'
 import dayjs from 'dayjs'
 
 const router = useRouter()
+const route = useRoute()
 const subscriptionStore = useSubscriptionStore()
 const categoryStore = useCategoryStore()
 
 const dialogVisible = ref(false)
 const selectedEvent = ref(null)
+const lastOpenedId = ref(null)
 
 // 生成未來 12 個月的付款事件
 const calendarEvents = computed(() => {
@@ -68,11 +70,27 @@ const calendarEvents = computed(() => {
   const endDate = today.add(12, 'month')
 
   subscriptionStore.subscriptions.forEach(sub => {
+    // 檢查必要欄位，避免無限循環
+    if (!sub.nextPaymentDate || !sub.cycle) {
+      console.warn('跳過無效訂閱：', sub)
+      return
+    }
+
     let currentDate = dayjs(sub.nextPaymentDate)
+
+    // 驗證日期是否有效
+    if (!currentDate.isValid()) {
+      console.warn('跳過無效日期的訂閱：', sub)
+      return
+    }
+
     const category = categoryStore.getCategoryById(sub.categoryId)
 
     // 生成未來 12 個月的重複付款事件
-    while (currentDate.isBefore(endDate)) {
+    let iterations = 0
+    const maxIterations = 365 // 防止無限循環
+
+    while (currentDate.isBefore(endDate) && iterations < maxIterations) {
       events.push({
         title: sub.name,
         start: currentDate.format('YYYY-MM-DD'),
@@ -87,13 +105,27 @@ const calendarEvents = computed(() => {
       })
 
       // 根據週期計算下次付款日
-      if (sub.cycle === 'monthly') {
+      if (sub.cycle === 'daily') {
+        currentDate = currentDate.add(1, 'day')
+      } else if (sub.cycle === 'weekly') {
+        currentDate = currentDate.add(1, 'week')
+      } else if (sub.cycle === 'monthly') {
         currentDate = currentDate.add(1, 'month')
       } else if (sub.cycle === 'quarterly') {
         currentDate = currentDate.add(3, 'month')
       } else if (sub.cycle === 'yearly') {
         currentDate = currentDate.add(1, 'year')
+      } else {
+        // 如果是未知的週期類型，預設為月付並警告
+        console.warn('未知的週期類型：', sub.cycle, '訂閱：', sub.name)
+        currentDate = currentDate.add(1, 'month')
       }
+
+      iterations++
+    }
+
+    if (iterations >= maxIterations) {
+      console.warn('訂閱事件生成達到最大次數限制：', sub.name)
     }
   })
 
@@ -120,6 +152,30 @@ const calendarOptions = computed(() => ({
   firstDay: 0
 }))
 
+const openFromQuery = () => {
+  const idStr = route.query.subscriptionId
+  if (!idStr) return
+  const id = Number(idStr)
+  if (!Number.isFinite(id) || id === lastOpenedId.value) return
+  const event = calendarEvents.value.find(item => item.extendedProps?.subscriptionId === id)
+  if (!event) return
+
+  lastOpenedId.value = id
+  selectedEvent.value = event
+  dialogVisible.value = true
+
+  const { subscriptionId, ...rest } = route.query
+  router.replace({ query: rest })
+}
+
+watch(
+  () => [route.query.subscriptionId, calendarEvents.value.length],
+  () => {
+    openFromQuery()
+  },
+  { immediate: true }
+)
+
 const handleEventClick = (info) => {
   selectedEvent.value = info.event
   dialogVisible.value = true
@@ -131,6 +187,8 @@ const formatDate = (date) => {
 
 const getCycleText = (cycle) => {
   const cycleMap = {
+    daily: '每日',
+    weekly: '每週',
     monthly: '每月',
     quarterly: '每季',
     yearly: '每年'
@@ -174,7 +232,7 @@ const goToSubscriptions = () => {
   border-bottom: none;
 }
 
-html.dark .detail-item {
+:global(.dark-theme) .detail-item {
   border-bottom-color: var(--border-color);
 }
 
@@ -198,7 +256,7 @@ html.dark .detail-item {
   transition: color 0.3s ease;
 }
 
-html.dark .detail-value.amount {
+:global(.dark-theme) .detail-value.amount {
   color: var(--accent-mint);
 }
 
@@ -249,40 +307,40 @@ html.dark .detail-value.amount {
 }
 
 /* 暗色模式 - FullCalendar 樣式調整 */
-html.dark :deep(.fc-theme-standard th) {
+:global(.dark-theme) :deep(.fc-theme-standard th) {
   background-color: var(--bg-secondary) !important;
 }
 
-html.dark :deep(.fc-col-header-cell) {
+:global(.dark-theme) :deep(.fc-col-header-cell) {
   background-color: var(--bg-secondary) !important;
 }
 
-html.dark :deep(.fc-scrollgrid) {
+:global(.dark-theme) :deep(.fc-scrollgrid) {
   border-color: var(--border-color);
 }
 
-html.dark :deep(.fc-col-header-cell-cushion) {
+:global(.dark-theme) :deep(.fc-col-header-cell-cushion) {
   color: var(--text-primary);
 }
 
-html.dark :deep(.fc-toolbar-title) {
+:global(.dark-theme) :deep(.fc-toolbar-title) {
   color: var(--text-primary);
 }
 
-html.dark :deep(.fc-daygrid-day-number) {
+:global(.dark-theme) :deep(.fc-daygrid-day-number) {
   color: var(--text-primary);
 }
 
-html.dark :deep(.fc-day-today) {
+:global(.dark-theme) :deep(.fc-day-today) {
   background-color: rgba(91, 141, 239, 0.18) !important;
 }
 
-html.dark :deep(.fc) {
+:global(.dark-theme) :deep(.fc) {
   border-color: var(--border-color);
 }
 
-html.dark :deep(.fc td),
-html.dark :deep(.fc th) {
+:global(.dark-theme) :deep(.fc td),
+:global(.dark-theme) :deep(.fc th) {
   border-color: var(--border-color);
 }
 </style>

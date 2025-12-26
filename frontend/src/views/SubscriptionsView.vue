@@ -197,6 +197,10 @@
         </el-form-item>
 
         <el-form-item label="推算歷史支出">
+          <el-switch v-model="form.includeHistoricalPayments" />
+          <template #extra>
+            <span class="text-muted">開啟後，儀表板折線圖將從訂閱起始日開始推算過去的歷史支出（選填）</span>
+          </template>
         </el-form-item>
         </el-form>
 

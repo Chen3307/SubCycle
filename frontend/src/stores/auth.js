@@ -27,15 +27,12 @@ export const useAuthStore = defineStore('auth', () => {
   const register = async (email, password, name) => {
     try {
       const response = await authAPI.register(email, password, name)
-      const { token: jwtToken, userId, email: userEmail, name: userName, role } = response.data
 
-      const userData = { id: userId, email: userEmail, name: userName, role }
-      user.value = userData
-      token.value = jwtToken
-      localStorage.setItem('token', jwtToken)
-      localStorage.setItem('user', JSON.stringify(userData))
+      // 註冊成功後不再自動登入，需要先驗證 Email
+      // 後端會返回訊息提示用戶去驗證 Email
+      const message = response.data?.message || '註冊成功！請檢查您的信箱完成 Email 驗證'
 
-      return { success: true }
+      return { success: true, message }
     } catch (error) {
       const message = error.response?.data?.message || '註冊失敗，請稍後再試'
       return { success: false, message }

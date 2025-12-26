@@ -85,11 +85,14 @@ public class AuthService {
             System.err.println("發送驗證郵件失敗: " + e.getMessage());
         }
 
-        // 生成 JWT 和 Refresh Token（即使未驗證也允許登入，但部分功能可能受限）
-        String token = jwtUtil.generateToken(user);
-        String refreshToken = refreshTokenService.createRefreshToken(user);
+        // 註冊成功，但需要先驗證 Email 才能登入
+        AuthResponse response = new AuthResponse();
+        response.setMessage("註冊成功！已發送驗證郵件到您的信箱，請先完成 Email 驗證後再登入");
+        response.setUserId(user.getId());
+        response.setEmail(user.getEmail());
+        response.setName(user.getName());
 
-        return new AuthResponse(token, refreshToken, user.getId(), user.getEmail(), user.getName(), user.getRole());
+        return response;
     }
 
     /**

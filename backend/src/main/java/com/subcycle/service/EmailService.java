@@ -1,6 +1,7 @@
 package com.subcycle.service;
 
 import com.subcycle.config.AppProperties;
+import jakarta.annotation.PostConstruct;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
@@ -32,47 +33,73 @@ public class EmailService {
     @Autowired
     private AppProperties appProperties;
 
-    @Value("${spring.mail.username:noreply@subcycle.com}")
+    @Value("${spring.mail.username:}")
     private String fromEmail;
+
+    @PostConstruct
+    public void init() {
+        if (mailSender == null || fromEmail == null || fromEmail.isEmpty()) {
+            logger.warn("=================================================================");
+            logger.warn("郵件服務未配置！");
+            logger.warn("請在 backend/.env 檔案中設定以下環境變數：");
+            logger.warn("  MAIL_USERNAME=your-email@gmail.com");
+            logger.warn("  MAIL_PASSWORD=your-app-password");
+            logger.warn("詳細設定方式請參考 backend/.env.example 檔案");
+            logger.warn("=================================================================");
+        } else {
+            logger.info("郵件服務已啟用，發件人：{}", fromEmail);
+        }
+    }
 
     /**
      * 發送簡單純文本郵件
      */
     public void sendSimpleEmail(String to, String subject, String text) {
-        if (mailSender == null) {
+        if (mailSender == null || fromEmail == null || fromEmail.isEmpty()) {
             logger.warn("郵件服務未配置，無法發送郵件給 {} - 主題: {}", to, subject);
+            logger.warn("請在 backend/.env 檔案中設定 MAIL_USERNAME 和 MAIL_PASSWORD");
             return;
         }
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(fromEmail);
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(text);
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(to);
+            message.setSubject(subject);
+            message.setText(text);
 
-        mailSender.send(message);
-        logger.info("已發送郵件給 {} - 主題: {}", to, subject);
+            mailSender.send(message);
+            logger.info("已發送郵件給 {} - 主題: {}", to, subject);
+        } catch (Exception e) {
+            logger.error("發送郵件失敗：{} - 收件人: {}, 主題: {}", e.getMessage(), to, subject);
+        }
     }
 
     /**
      * 發送 HTML 郵件
      */
     public void sendHtmlEmail(String to, String subject, String htmlContent) throws MessagingException {
-        if (mailSender == null) {
+        if (mailSender == null || fromEmail == null || fromEmail.isEmpty()) {
             logger.warn("郵件服務未配置，無法發送郵件給 {} - 主題: {}", to, subject);
+            logger.warn("請在 backend/.env 檔案中設定 MAIL_USERNAME 和 MAIL_PASSWORD");
             return;
         }
 
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-        helper.setFrom(fromEmail);
-        helper.setTo(to);
-        helper.setSubject(subject);
-        helper.setText(htmlContent, true);
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
 
-        mailSender.send(message);
-        logger.info("已發送 HTML 郵件給 {} - 主題: {}", to, subject);
+            mailSender.send(message);
+            logger.info("已發送 HTML 郵件給 {} - 主題: {}", to, subject);
+        } catch (Exception e) {
+            logger.error("發送 HTML 郵件失敗：{} - 收件人: {}, 主題: {}", e.getMessage(), to, subject);
+            throw e;
+        }
     }
 
     /**

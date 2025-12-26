@@ -152,7 +152,9 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: radial-gradient(1200px circle at 15% 20%, rgba(141, 234, 195, 0.28), transparent 45%),
+    radial-gradient(900px circle at 85% 0%, rgba(91, 141, 239, 0.22), transparent 40%),
+    linear-gradient(135deg, #f6fff9 0%, #eef2ff 100%);
   padding: 20px;
 }
 
@@ -170,7 +172,7 @@ onMounted(() => {
 }
 
 .loading-icon {
-  color: #667eea;
+  color: #6eb5a0;
   animation: spin 1s linear infinite;
 }
 
@@ -184,7 +186,7 @@ onMounted(() => {
 }
 
 .success-icon {
-  color: #67c23a;
+  color: #6eb5a0;
 }
 
 .error-icon {
@@ -209,6 +211,12 @@ onMounted(() => {
 
 .action-btn {
   min-width: 150px;
+  background: linear-gradient(120deg, #5b8def, #70d5b4);
+  border: none;
+}
+
+.action-btn:hover {
+  background: linear-gradient(120deg, #4a7ae0, #6ecfae);
 }
 
 .action-buttons {
@@ -218,10 +226,28 @@ onMounted(() => {
   flex-wrap: wrap;
 }
 
+.action-buttons :deep(.el-button--primary) {
+  background: linear-gradient(120deg, #5b8def, #70d5b4);
+  border: none;
+}
+
+.action-buttons :deep(.el-button--primary:hover) {
+  background: linear-gradient(120deg, #4a7ae0, #6ecfae);
+}
+
 .resend-form {
   margin-top: 30px;
   max-width: 350px;
   margin-left: auto;
   margin-right: auto;
+}
+
+.resend-form :deep(.el-button--primary) {
+  background: linear-gradient(120deg, #5b8def, #70d5b4);
+  border: none;
+}
+
+.resend-form :deep(.el-button--primary:hover) {
+  background: linear-gradient(120deg, #4a7ae0, #6ecfae);
 }
 </style>

@@ -156,12 +156,15 @@ const handleRegister = async () => {
 
         if (result.success) {
           ElMessage({
-            message: '註冊成功！我們已發送驗證郵件到您的信箱，請點擊郵件中的連結驗證您的 Email。',
+            message: result.message || '註冊成功！請檢查您的信箱完成 Email 驗證後再登入',
             type: 'success',
-            duration: 5000,
+            duration: 6000,
             showClose: true
           })
-          router.push('/dashboard')
+          // 註冊成功後跳轉到登入頁面
+          setTimeout(() => {
+            router.push('/login')
+          }, 1500)
         } else {
           ElMessage.error(result.message || '註冊失敗')
         }

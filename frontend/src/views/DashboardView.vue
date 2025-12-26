@@ -465,6 +465,8 @@ const alignToRangeStart = (anchorDate, rangeStart, cycle) => {
 const goToSubscriptions = () => router.push('/subscriptions')
 const goToCategories = () => router.push('/categories')
 const goToCalendar = () => router.push('/calendar')
+const addSubscription = () => router.push('/subscriptions?action=add')
+const addCategory = () => router.push('/categories?action=add')
 
 // 快速操作 - 匯出報表
 const handleExport = async () => {
@@ -499,14 +501,14 @@ const quickActions = [
     desc: '馬上建立新的訂閱紀錄',
     icon: Plus,
     bg: '#E6F7FF',
-    onClick: () => goToSubscriptions()
+    onClick: () => addSubscription()
   },
   {
     label: '新增類別',
     desc: '先分類再記帳',
     icon: CollectionTag,
     bg: '#F5E8FF',
-    onClick: () => goToCategories()
+    onClick: () => addCategory()
   },
   {
     label: '查看行事曆',

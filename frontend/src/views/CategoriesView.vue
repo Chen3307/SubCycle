@@ -114,12 +114,15 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, watch, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useCategoryStore } from '../stores/category'
 import { useSubscriptionStore } from '../stores/subscription'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Edit, Delete } from '@element-plus/icons-vue'
 
+const route = useRoute()
+const router = useRouter()
 const categoryStore = useCategoryStore()
 const subscriptionStore = useSubscriptionStore()
 
@@ -271,6 +274,15 @@ const handleDelete = async (category) => {
     }
   }
 }
+
+// 從 query 參數自動打開新增對話框
+onMounted(() => {
+  if (route.query.action === 'add') {
+    openAddDialog()
+    // 清除 query 參數
+    router.replace({ query: {} })
+  }
+})
 </script>
 
 <style scoped>

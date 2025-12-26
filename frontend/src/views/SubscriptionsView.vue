@@ -423,6 +423,14 @@ const openEditDialog = async (subscription) => {
 }
 
 const openFromQuery = async () => {
+  // 處理新增動作
+  if (route.query.action === 'add') {
+    await openAddDialog()
+    router.replace({ query: {} })
+    return
+  }
+
+  // 處理編輯動作
   if (!subscriptions.value.length) return
   const idStr = route.query.subscriptionId
   if (!idStr) return
@@ -439,7 +447,7 @@ const openFromQuery = async () => {
 }
 
 watch(
-  () => [route.query.subscriptionId, subscriptions.value.length],
+  () => [route.query.subscriptionId, route.query.action, subscriptions.value.length],
   () => {
     openFromQuery()
   },

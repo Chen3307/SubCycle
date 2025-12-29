@@ -88,7 +88,14 @@ public class SecurityConfig {
                 // 公開端點：不需要認證
                 .requestMatchers("/api/auth/**").permitAll()
                 // Swagger UI 公開訪問
-                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers(
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/v3/api-docs/**",
+                    "/api-docs/**",
+                    "/swagger-resources/**",
+                    "/webjars/**"
+                ).permitAll()
                 // 管理者端點：需要 ADMIN 角色
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 // 所有其他請求都需要認證

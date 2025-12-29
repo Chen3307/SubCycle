@@ -334,12 +334,6 @@ const chartMeta = computed(() => {
 const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
-  animation: {
-    duration: 1000,
-    easing: 'easeOutQuart',
-    animateRotate: false,
-    animateScale: true
-  },
   onHover: (event, elements, chart) => {
     chart.canvas.style.cursor = 'default'
     if (elements?.length) {

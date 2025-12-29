@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import dayjs from 'dayjs'
 import { useSubscriptionStore } from './subscription'
 import { categoryAPI } from '../api/index'
 
@@ -34,10 +35,93 @@ export const useCategoryStore = defineStore('category', () => {
     }
   }
 
-  // 計算各類別的支出分佈（用於圓餅圖）
+  const getCycleStep = (cycle) => {
+    if (cycle === 'daily') return { amount: 1, unit: 'day' }
+    if (cycle === 'weekly') return { amount: 1, unit: 'week' }
+    if (cycle === 'monthly') return { amount: 1, unit: 'month' }
+    if (cycle === 'quarterly') return { amount: 3, unit: 'month' }
+    if (cycle === 'yearly') return { amount: 1, unit: 'year' }
+    return { amount: 1, unit: 'month' }
+  }
+
+  const alignToRangeStart = (anchorDate, rangeStart, cycle) => {
+    if (!anchorDate?.isValid()) return anchorDate
+    const { amount, unit } = getCycleStep(cycle)
+    let cursor = anchorDate
+
+    if (cursor.isBefore(rangeStart, 'day')) {
+      const diff = rangeStart.diff(cursor, unit, true)
+      const steps = Math.floor(diff / amount)
+      if (steps > 0) {
+        cursor = cursor.add(steps * amount, unit)
+      }
+      while (cursor.isBefore(rangeStart, 'day')) {
+        cursor = cursor.add(amount, unit)
+      }
+    } else if (cursor.isAfter(rangeStart, 'day')) {
+      const diff = cursor.diff(rangeStart, unit, true)
+      const steps = Math.floor(diff / amount)
+      if (steps > 0) {
+        cursor = cursor.subtract(steps * amount, unit)
+      }
+      while (cursor.isAfter(rangeStart, 'day')) {
+        cursor = cursor.subtract(amount, unit)
+      }
+      if (cursor.isBefore(rangeStart, 'day')) {
+        cursor = cursor.add(amount, unit)
+      }
+    }
+
+    return cursor
+  }
+
+  const forEachPaymentInRange = (subscription, rangeStart, rangeEnd, onPayment) => {
+    if (!subscription?.nextPaymentDate || !onPayment) return
+    const startDate = subscription.startDate ? dayjs(subscription.startDate) : null
+    const endDate = subscription.endDate ? dayjs(subscription.endDate) : null
+    const includeHistorical = subscription.includeHistoricalPayments ?? false
+    const anchorDate = includeHistorical && startDate
+      ? startDate
+      : dayjs(subscription.nextPaymentDate)
+    let cursor = alignToRangeStart(anchorDate, rangeStart, subscription.cycle)
+    if (!cursor?.isValid()) return
+
+    const { amount, unit } = getCycleStep(subscription.cycle)
+    const maxIterations = 1000
+    let iterations = 0
+
+    while (cursor.isSameOrBefore(rangeEnd, 'day') && iterations < maxIterations) {
+      let paymentDate = cursor
+
+      if (startDate && cursor.isBefore(startDate, 'day')) {
+        const nextDate = cursor.add(amount, unit)
+        if (nextDate.isAfter(startDate, 'day')) {
+          paymentDate = startDate
+        } else {
+          cursor = nextDate
+          iterations++
+          continue
+        }
+      }
+
+      const isAfterEnd = endDate && paymentDate.isAfter(endDate, 'day')
+      if (!isAfterEnd
+        && paymentDate.isSameOrAfter(rangeStart, 'day')
+        && paymentDate.isSameOrBefore(rangeEnd, 'day')) {
+        onPayment(paymentDate)
+      }
+      cursor = cursor.add(amount, unit)
+      iterations++
+    }
+  }
+
+  // 計算本月各類別支出分佈（用於圓餅圖）
   const categoryDistribution = computed(() => {
     const subscriptionStore = useSubscriptionStore()
     const distribution = {}
+    const today = dayjs().startOf('day')
+    const monthStart = today.startOf('month')
+    const monthEnd = today.endOf('month')
 
     categories.value.forEach(cat => {
       distribution[cat.id] = {
@@ -47,16 +131,12 @@ export const useCategoryStore = defineStore('category', () => {
       }
     })
 
-    // 使用月均支出估算各類別分佈
     subscriptionStore.subscriptions.forEach(sub => {
       if (distribution[sub.categoryId]) {
-        let monthlyAmount = sub.amount
-        if (sub.cycle === 'quarterly') {
-          monthlyAmount = sub.amount / 3
-        } else if (sub.cycle === 'yearly') {
-          monthlyAmount = sub.amount / 12
-        }
-        distribution[sub.categoryId].amount += monthlyAmount
+        forEachPaymentInRange(sub, monthStart, monthEnd, (paymentDate) => {
+          // 圓餅圖顯示本月所有扣款，不受 includeHistoricalPayments 影響
+          distribution[sub.categoryId].amount += sub.amount
+        })
       }
     })
 

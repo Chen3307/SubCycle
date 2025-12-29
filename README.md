@@ -1,6 +1,6 @@
 # SubCycle - 訂閱管理系統
 
-一個完整的訂閱與帳單追蹤系統，使用 Vue 3 (前端) + Spring Boot (後端) + MySQL (資料庫) 建立。
+一個完整的訂閱與帳單追蹤系統，使用 Vue 3 (前端) + Spring Boot (後端) 建立。
 
 ## 專案結構
 
@@ -14,13 +14,6 @@ SubCycle/
 ├── backend/          # Spring Boot 後端 API
 │   ├── src/          # Java 原始碼
 │   └── README.md     # 後端說明文件
-│
-├── database/         # MySQL 資料庫腳本
-│   ├── schema_minimal.sql      # 資料庫結構（極精簡版）
-│   ├── seed_minimal.sql        # 初始測試資料
-│   ├── init_db.bat            # Windows 初始化腳本
-│   ├── init_db.sh             # Mac/Linux 初始化腳本
-│   └── README.md              # 資料庫文件
 │
 └── README.md         # 專案總覽（本文件）
 ```
@@ -36,45 +29,44 @@ SubCycle/
 - **Node.js 18+** （前端）
 - **Java 21+** （後端）
 - **Maven 3.6+** （後端）
-- **MySQL 8.0+** （資料庫）
 
-### 1. 建立資料庫
-
-```bash
-cd database
-
-# Windows
-init_db.bat
-
-# Mac/Linux
-chmod +x init_db.sh
-./init_db.sh
-```
-
-### 2. 啟動後端 API
+### 1. 設定環境變數並啟動後端 API
 
 ```bash
 cd backend
 
-# 1. 修改資料庫密碼
-# 編輯 src/main/resources/application.properties
-# 將 spring.datasource.password 改成你的 MySQL 密碼
+# 1. 複製環境變數範本檔案
+# Windows:
+copy .env.example .env
+# Mac/Linux:
+# cp .env.example .env
 
-# 2. 啟動 Spring Boot
+# 2. 編輯 .env 檔案，填入實際的配置資訊
+# - JWT_SECRET: JWT 加密金鑰（至少 32 個字元）
+# - MAIL_USERNAME: Gmail 帳號（選用，用於郵件通知功能）
+# - MAIL_PASSWORD: Gmail 應用程式密碼（選用）
+
+# 3. 啟動 Spring Boot
 mvn spring-boot:run
 ```
 
 後端 API 將在 http://localhost:8080 啟動
 
-### 3. 啟動前端應用
+### 2. 設定前端環境並啟動應用
 
 ```bash
 cd frontend
 
-# 安裝依賴（首次執行）
+# 1. 複製環境變數範本檔案
+# Windows:
+copy .env.example .env
+# Mac/Linux:
+# cp .env.example .env
+
+# 2. 安裝依賴（首次執行）
 npm install
 
-# 啟動開發伺服器
+# 3. 啟動開發伺服器
 npm run dev
 ```
 
@@ -97,24 +89,13 @@ npm run dev
 
 ### 後端
 
-- **Spring Boot 3.2** - Java 框架
-- **Spring Data JPA** - ORM 資料持久化
+- **Spring Boot 3.5.9** - Java 框架
 - **Spring Security** - 安全認證
 - **JWT** - Token 認證
 - **Spring Mail** - 郵件發送
-- **iText 7** - PDF 生成
 - **Apache POI** - Excel 生成
 - **Bucket4j** - API 限流
-- **MySQL** - 關聯式資料庫
 - **Maven** - 專案管理工具
-
-### 資料庫
-
-- **MySQL 8.0+**
-- **4 張核心資料表**：users, categories, subscriptions, notifications
-- **3 個統計視圖**：使用者統計、即將到期訂閱、類別統計
-
----
 
 ## 功能特色
 
@@ -179,7 +160,6 @@ npm run dev
 
 - [前端文件](./frontend/README.md) - Vue.js 應用程式說明
 - [後端文件](./backend/README.md) - Spring Boot API 說明
-- [資料庫文件](./database/README.md) - MySQL 資料庫架構
 - [JWT 認證指南](./JWT_AUTHENTICATION_GUIDE.md) - JWT 認證實作說明
 - [第四優先功能說明](./FEATURES_TIER4.md) - Email、導出、限流
 
@@ -201,17 +181,6 @@ npm run build    # 建置正式版本
 cd backend
 mvn spring-boot:run    # 啟動應用程式
 mvn clean install      # 編譯並安裝
-```
-
-### 資料庫管理
-
-```bash
-# 重置資料庫
-mysql -u root -p subcycle < database/schema_minimal.sql
-mysql -u root -p subcycle < database/seed_minimal.sql
-
-# 備份資料庫
-mysqldump -u root -p subcycle > backup.sql
 ```
 
 ---
@@ -238,10 +207,6 @@ mysqldump -u root -p subcycle > backup.sql
 ### Q: 前端無法連接後端？
 
 確認後端已啟動在 port 8080，並檢查 CORS 設定。
-
-### Q: 資料庫連線失敗？
-
-檢查 `backend/src/main/resources/application.properties` 中的資料庫密碼是否正確。
 
 ### Q: 如何修改 Logo 大小？
 
@@ -271,15 +236,5 @@ MIT
 
 ### 數據導出
 
-- `GET /api/export/subscriptions/pdf` - 導出訂閱 PDF
 - `GET /api/export/subscriptions/excel` - 導出訂閱 Excel
-- `GET /api/export/payments/pdf` - 導出付款歷史 PDF
-- `GET /api/export/payments/excel` - 導出付款歷史 Excel
-
-完整 API 文檔請訪問：http://localhost:8080/swagger-ui.html
-
----
-
-**最後更新：2024-12-14**
-- `POST /api/auth/refresh` - 刷新 Token
-- `POST /api/auth/logout` - 用戶登出
+  完整 API 文檔請訪問：http://localhost:8080/swagger-ui.html

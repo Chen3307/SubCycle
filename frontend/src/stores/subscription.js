@@ -126,13 +126,10 @@ export const useSubscriptionStore = defineStore('subscription', () => {
   }
 
   const calculateRangeTotal = (rangeStart, rangeEnd) => {
-    const today = dayjs().startOf('day')
     let total = 0
     subscriptions.value.forEach(sub => {
       forEachPaymentInRange(sub, rangeStart, rangeEnd, (paymentDate) => {
-        if (!sub.includeHistoricalPayments && paymentDate.isBefore(today, 'day')) {
-          return
-        }
+        // 計算該時間範圍內的所有扣款，不受 includeHistoricalPayments 影響
         total += sub.amount
       })
     })

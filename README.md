@@ -190,7 +190,7 @@ mvn clean install      # 編譯並安裝
 - [x] JWT 認證整合
 - [x] 密碼加密 (BCrypt)
 - [x] 郵件提醒功能
-- [x] 匯出報表 (PDF/Excel)
+- [x] 匯出報表 (Excel)
 - [x] API Rate Limiting
 
 ## 開發中功能

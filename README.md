@@ -208,11 +208,7 @@ mvn clean install      # 編譯並安裝
 
 確認後端已啟動在 port 8080，並檢查 CORS 設定。
 
-### Q: 如何修改 Logo 大小？
 
-參考 [前端文件](./frontend/README.md#-修改-logo-大小)。
-
----
 
 ## License
 

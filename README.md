@@ -209,13 +209,6 @@ mvn clean install      # 編譯並安裝
 確認後端已啟動在 port 8080，並檢查 CORS 設定。
 
 
-
-## License
-
-MIT
-
----
-
 ## API 端點
 
 ### 認證相關
